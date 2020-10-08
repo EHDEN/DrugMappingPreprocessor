@@ -155,7 +155,7 @@ public class MainFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				// TODO				getCurrentTab().loadGeneralSettingsFile();
+// TODO				getCurrentTab().loadGeneralSettingsFile();
 			}
 		});
 		file.add(loadGeneralSettingsMenuItem);
