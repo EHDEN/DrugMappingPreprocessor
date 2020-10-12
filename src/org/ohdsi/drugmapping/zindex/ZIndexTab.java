@@ -19,19 +19,20 @@ import javax.swing.JPanel;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
-import org.ohdsi.drugmapping.InputFileDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
+import org.ohdsi.drugmapping.files.InputFileDefinition;
 import org.ohdsi.drugmapping.gui.Folder;
-import org.ohdsi.drugmapping.gui.DelimitedInputFile;
+import org.ohdsi.drugmapping.gui.InputFileGUI;
+import org.ohdsi.drugmapping.gui.DelimitedInputFileGUI;
 import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.MainFrameTab;
 
 public class ZIndexTab extends MainFrameTab {
 	private static final long serialVersionUID = 8907817283501911409L;
 
-	private static InputFileDefinition inputFileDefinition = new ZIndexConversionInputFiles();
+	private static InputFileDefinition inputFileDefinition = new ZIndexPreprocessorInputFiles();
 	
-	private List<DelimitedInputFile> inputFiles = new ArrayList<DelimitedInputFile>();
+	private List<InputFileGUI> inputFiles = new ArrayList<InputFileGUI>();
 
 	
 	public ZIndexTab(DrugMappingPreprocessor drugMapping, MainFrame mainFrame) {
@@ -51,7 +52,7 @@ public class ZIndexTab extends MainFrameTab {
 		
 		for (FileDefinition fileDefinition : getInputFiles()) {
 			if (fileDefinition.isUsedInInterface()) {
-				DelimitedInputFile inputFile = new DelimitedInputFile(fileDefinition);
+				InputFileGUI inputFile = InputFileGUI.getInputFile(mainFrame.getFrame(), fileDefinition);
 				inputFiles.add(inputFile);
 				filePanel.add(inputFile);
 			}
@@ -123,7 +124,7 @@ public class ZIndexTab extends MainFrameTab {
 			if (outputFolder != null) {
 				outputFolder.putSettings(fileSettings);
 			}
-			for (DelimitedInputFile inputFile : inputFiles) {
+			for (InputFileGUI inputFile : inputFiles) {
 				inputFile.putSettings(fileSettings);
 			}
 		}
@@ -137,7 +138,7 @@ public class ZIndexTab extends MainFrameTab {
 			settings.add("");
 			settings.add("");
 		}
-		for (DelimitedInputFile inputFile : inputFiles) {
+		for (InputFileGUI inputFile : inputFiles) {
 			settings.addAll(inputFile.getSettings());
 			settings.add("");
 			settings.add("");
@@ -192,7 +193,7 @@ public class ZIndexTab extends MainFrameTab {
 	
 	
 	public String getOutputFileName() {
-		DelimitedInputFile gpkIPCIFile = getInputFile("ZIndex GPK IPCI Compositions File");
+		DelimitedInputFileGUI gpkIPCIFile = getInputFile("ZIndex GPK IPCI Compositions File");
 		return "ZIndex" + (((gpkIPCIFile != null) && gpkIPCIFile.isSelected()) ? " IPCI" : "") + " - GPK" + ".csv";
 	}
 	
@@ -202,12 +203,12 @@ public class ZIndexTab extends MainFrameTab {
 	}
 	
 	
-	public DelimitedInputFile getInputFile(String fileName) {
-		DelimitedInputFile file = null;
+	public DelimitedInputFileGUI getInputFile(String fileName) {
+		DelimitedInputFileGUI file = null;
 		
-		for (DelimitedInputFile inputFile : inputFiles) {
+		for (InputFileGUI inputFile : inputFiles) {
 			if (inputFile.getLabelText().equals(fileName)) {
-				file = inputFile;
+				file = (DelimitedInputFileGUI) inputFile;
 				break;
 			}
 		}
@@ -222,7 +223,7 @@ public class ZIndexTab extends MainFrameTab {
 		logFileSettings("ZIndex GNK File", getInputFile("ZIndex GNK File"));
 		logFileSettings("ZIndex GPK Statistics File", getInputFile("ZIndex GPK Statistics File"));
 		logFileSettings("ZIndex GPK IPCI Compositions File", getInputFile("ZIndex GPK IPCI Compositions File"));
-		new ZIndexConversion(
+		new ZIndexPreprocessor(
 				getInputFile("ZIndex GPK File"), 
 				getInputFile("ZIndex GSK File"), 
 				getInputFile("ZIndex GNK File"), 

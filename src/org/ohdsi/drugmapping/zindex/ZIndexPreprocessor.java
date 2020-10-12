@@ -8,13 +8,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
-import org.ohdsi.drugmapping.gui.DelimitedInputFile;
+
+import org.ohdsi.drugmapping.files.Row;
+import org.ohdsi.drugmapping.gui.DelimitedInputFileGUI;
 import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingNumberUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
-import org.ohdsi.utilities.files.Row;
 
-public class ZIndexConversion {
+public class ZIndexPreprocessor {
 	private static final boolean IGNORE_EMPTY_GPK_NAMES   = false;
 	private static final boolean IGNORE_STARRED_GPK_NAMES = false;
 	
@@ -94,7 +95,7 @@ public class ZIndexConversion {
 
 	
 	@SuppressWarnings("unused")
-	public ZIndexConversion(DelimitedInputFile gpkFile, DelimitedInputFile gskFile, DelimitedInputFile gnkFile, DelimitedInputFile gpkStatsFile, DelimitedInputFile gpkIPCIFile, String gpkFullFileName) {	
+	public ZIndexPreprocessor(DelimitedInputFileGUI gpkFile, DelimitedInputFileGUI gskFile, DelimitedInputFileGUI gnkFile, DelimitedInputFileGUI gpkStatsFile, DelimitedInputFileGUI gpkIPCIFile, String gpkFullFileName) {	
 		boolean ok = true;
 		
 		String translationType = null; 
@@ -106,7 +107,7 @@ public class ZIndexConversion {
 		if (ok) {
 			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ZIndex GNK File ...");
 			try {
-				if (gnkFile.openFile()) {
+				if (gnkFile.openFileForReading()) {
 					while (gnkFile.hasNext()) {
 						Row row = gnkFile.next();
 
@@ -152,7 +153,7 @@ public class ZIndexConversion {
 		if (ok) {
 			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ZIndex GSK File ...");
 			try {
-				if (gskFile.openFile()) {
+				if (gskFile.openFileForReading()) {
 					while (gskFile.hasNext()) {
 						Row row = gskFile.next();
 
@@ -195,7 +196,7 @@ public class ZIndexConversion {
 		if (ok) {
 			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ZIndex GPK File ...");
 			try {
-				if (gpkFile.openFile()) {
+				if (gpkFile.openFileForReading()) {
 					while (gpkFile.hasNext()) {
 						Row row = gpkFile.next();
 
@@ -254,7 +255,7 @@ public class ZIndexConversion {
 		if (ok) {
 			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ZIndex GPK Statistics File ...");
 			try {
-				if (gpkStatsFile.openFile()) {
+				if (gpkStatsFile.openFileForReading()) {
 					while (gpkStatsFile.hasNext()) {
 						Row row = gpkStatsFile.next();
 
@@ -287,7 +288,7 @@ public class ZIndexConversion {
 			if ((gpkIPCIFile != null) && gpkIPCIFile.isSelected()) {
 				try {
 					System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ZIndex GPK IPCI Compositions File ...");
-					if (gpkIPCIFile.openFile()) {
+					if (gpkIPCIFile.openFileForReading()) {
 						
 						while (gpkIPCIFile.hasNext()) {
 							Row row = gpkIPCIFile.next();
@@ -677,7 +678,7 @@ public class ZIndexConversion {
 				
 				// Write output file
 				if (ok && (outputMap.size() > 0)) {
-					System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Writing out to: " + gpkFullFileName);
+					System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Writing output to: " + gpkFullFileName);
 					
 					try {
 						PrintWriter gpkFullFile = new PrintWriter(new File(gpkFullFileName));
@@ -690,6 +691,7 @@ public class ZIndexConversion {
 						header += "," + "IngredientNameStatus";
 						header += "," + "IngredientCode";
 						header += "," + "IngredientName";
+						//header += "," + "IngredientNameEnglish";
 						header += "," + "Dosage";
 						header += "," + "DosageUnit";
 						header += "," + "OrgDosage";

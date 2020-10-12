@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileDefinition {
+	public static final int GENERAL_FILE   = 0;
+	public static final int DELIMITED_FILE = 1;
+	public static final int XML_FILE       = 2;
 	
 	private String fileName;
 	private List<String> description = new ArrayList<String>();
+	private int fileType = -1;
 	private FileColumnDefinition[] columns;
 	private String defaultFile = "";
 	private String defaultFieldDelimiter = null;
@@ -15,27 +19,37 @@ public class FileDefinition {
 	private boolean usedInInterface = true;
 
 	
-	public FileDefinition(String fileName, String[] description, FileColumnDefinition[] columns) {
-		initialize(fileName, description, columns, null, null, null, true, true);
+	public FileDefinition(String fileName, String[] description, int fileType) {
+		initialize(fileName, description, fileType, null, null, null, null, true, true);
 	}
 
 	
-	public FileDefinition(String fileName, String[] description, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier) {
-		initialize(fileName, description, columns, defaultFile, defaultFieldDelimiter, defaultTextQualifier, true, true);
+	public FileDefinition(String fileName, String[] description, int fileType, boolean required, boolean usedInInterface) {
+		initialize(fileName, description, fileType, null, null, null, null, required, usedInInterface);
 	}
 
 	
-	public FileDefinition(String fileName, String[] description, FileColumnDefinition[] columns, boolean required, boolean usedInInterface) {
-		initialize(fileName, description, columns, null, null, null, required, usedInInterface);
+	public FileDefinition(String fileName, String[] description, int fileType, FileColumnDefinition[] columns) {
+		initialize(fileName, description, fileType, columns, null, null, null, true, true);
 	}
 
 	
-	public FileDefinition(String fileName, String[] description, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier, boolean required, boolean usedInInterface) {
-		initialize(fileName, description, columns, defaultFile, defaultFieldDelimiter, defaultTextQualifier, required, usedInInterface);
+	public FileDefinition(String fileName, String[] description, int fileType, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier) {
+		initialize(fileName, description, fileType, columns, defaultFile, defaultFieldDelimiter, defaultTextQualifier, true, true);
+	}
+
+	
+	public FileDefinition(String fileName, String[] description, int fileType, FileColumnDefinition[] columns, boolean required, boolean usedInInterface) {
+		initialize(fileName, description, fileType, columns, null, null, null, required, usedInInterface);
+	}
+
+	
+	public FileDefinition(String fileName, String[] description, int fileType, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier, boolean required, boolean usedInInterface) {
+		initialize(fileName, description, fileType, columns, defaultFile, defaultFieldDelimiter, defaultTextQualifier, required, usedInInterface);
 	}
 	
 	
-	private void initialize(String fileName, String[] description, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier, boolean required, boolean usedInInterface) {
+	private void initialize(String fileName, String[] description, int fileType, FileColumnDefinition[] columns, String defaultFile, String defaultFieldDelimiter, String defaultTextQualifier, boolean required, boolean usedInInterface) {
 		this.fileName = fileName;
 		for (String line : description) {
 			this.description.add(line);
@@ -46,6 +60,7 @@ public class FileDefinition {
 		else {
 			this.description.add("This file is optional.");
 		}
+		this.fileType = fileType;
 		this.columns = columns;
 		this.defaultFile = defaultFile;
 		this.defaultFieldDelimiter = defaultFieldDelimiter;
@@ -62,6 +77,11 @@ public class FileDefinition {
 	
 	public List<String> getDescription() {
 		return description;
+	}
+	
+	
+	public int getFileType() {
+		return fileType;
 	}
 	
 	

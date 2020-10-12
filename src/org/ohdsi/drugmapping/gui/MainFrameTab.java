@@ -160,7 +160,7 @@ public class MainFrameTab extends JPanel {
 	}
 	
 	
-	public void logFileSettings(String fileId, DelimitedInputFile file) {
+	public void logFileSettings(String fileId, DelimitedInputFileGUI file) {
 		if (file.getFileName() != null) {
 			System.out.println("Input File: " + fileId);
 			System.out.println("  Filename: " + file.getFileName());

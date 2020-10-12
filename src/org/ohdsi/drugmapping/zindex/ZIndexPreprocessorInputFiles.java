@@ -2,14 +2,15 @@ package org.ohdsi.drugmapping.zindex;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.ohdsi.drugmapping.InputFileDefinition;
+
 import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
+import org.ohdsi.drugmapping.files.InputFileDefinition;
 
-public class ZIndexConversionInputFiles extends InputFileDefinition {
+public class ZIndexPreprocessorInputFiles extends InputFileDefinition {
 	
 
-	public ZIndexConversionInputFiles() {
+	public ZIndexPreprocessorInputFiles() {
 		inputFiles = new ArrayList<FileDefinition>(
 				Arrays.asList(
 						new FileDefinition(
@@ -17,6 +18,7 @@ public class ZIndexConversionInputFiles extends InputFileDefinition {
 								new String[] {
 										"This file should contain ZIndex GPK drug definitions."
 						  		},
+								FileDefinition.DELIMITED_FILE,
 								new FileColumnDefinition[] {
 										new FileColumnDefinition(
 												"GPKCode",
@@ -104,6 +106,7 @@ public class ZIndexConversionInputFiles extends InputFileDefinition {
 								new String[] {
 										"This file should contain the ZIndex GSK (component) definitions."
 						  		},
+								FileDefinition.DELIMITED_FILE,
 								new FileColumnDefinition[] {
 										new FileColumnDefinition(
 												"GSKCode",
@@ -169,6 +172,7 @@ public class ZIndexConversionInputFiles extends InputFileDefinition {
 								new String[] {
 										"This file should contain the ZIndex GNK ingredient definitions."
 						  		},
+								FileDefinition.DELIMITED_FILE,
 								new FileColumnDefinition[] {
 										new FileColumnDefinition(
 												"GNKCode",
@@ -207,6 +211,7 @@ public class ZIndexConversionInputFiles extends InputFileDefinition {
 								new String[] {
 										"This file should contain the usage counts of the ZIndex GPK codes."
 						  		},
+								FileDefinition.DELIMITED_FILE,
 								new FileColumnDefinition[] {
 										new FileColumnDefinition(
 												"GPKCode",
@@ -228,6 +233,7 @@ public class ZIndexConversionInputFiles extends InputFileDefinition {
 										"This file is optional.",
 										"This file should contain ZIndex GPK drug definitions derived by the IPCI database.",
 						  		},
+								FileDefinition.DELIMITED_FILE,
 								new FileColumnDefinition[] {
 										new FileColumnDefinition(
 												"GPKCode",
