@@ -8,9 +8,9 @@ import java.util.Map;
 
 import org.ohdsi.drugmapping.files.Row;
 import org.ohdsi.drugmapping.files.XMLFile.XMLNode;
-import org.ohdsi.drugmapping.gui.DelimitedInputFileGUI;
-import org.ohdsi.drugmapping.gui.Folder;
-import org.ohdsi.drugmapping.gui.XMLInputFileGUI;
+import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
+import org.ohdsi.drugmapping.gui.files.Folder;
+import org.ohdsi.drugmapping.gui.files.XMLInputFileGUI;
 import org.ohdsi.drugmapping.utilities.DrugMappingFileUtilities;
 
 public class AEMPSPreprocessor {

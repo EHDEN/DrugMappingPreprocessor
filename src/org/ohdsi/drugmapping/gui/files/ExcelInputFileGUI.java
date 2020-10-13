@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.gui;
+package org.ohdsi.drugmapping.gui.files;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -40,25 +40,23 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
+import org.apache.poi.ss.usermodel.Row;
 import org.ohdsi.drugmapping.files.DelimitedFileWithHeader;
+import org.ohdsi.drugmapping.files.ExcelFile;
 import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
-import org.ohdsi.drugmapping.files.Row;
+import org.ohdsi.drugmapping.gui.JTextFieldLimit;
+import org.ohdsi.drugmapping.gui.MainFrame;
 
-public class DelimitedInputFileGUI extends InputFileGUI {
+public class ExcelInputFileGUI extends InputFileGUI {
 	private static final long serialVersionUID = -8908651240263793215L;
-	
-	private final String[] FIELD_DELIMITERS = new String[]{ "Tab", "Semicolon", "Comma", "Space", "Other" };
-	private final String[] TEXT_QUALIFIERS  = new String[]{ "\"", "'", "None" };
-	private final String   CHAR_SET         = ""; //"ISO-8859-1";
 	
 	private List<JComboBox<String>> comboBoxList;
 
-	private String fieldDelimiter = "Comma";
-	private String textQualifier = "\"";
+	private String sheetName = null;
 	private Map<String, String> columnMapping = new HashMap<String, String>();
 	
-	private Iterator<Row> fileIterator;
+	private ExcelFile excelFile = null;
 	
 	
 	public static char fieldDelimiter(String delimiterName) {
@@ -76,40 +74,22 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	public DelimitedInputFileGUI(Component parent, FileDefinition fileDefinition) {
+	public ExcelInputFileGUI(Component parent, FileDefinition fileDefinition) {
 		super(parent, fileDefinition);
 		
 		for (FileColumnDefinition column : fileDefinition.getColumns()) {
 			columnMapping.put(column.getColumnName(), null);
 		}
-		
-		if (fileDefinition.getDefaultFieldDelimiter() != null) {
-			setFieldDelimiter(fileDefinition.getDefaultFieldDelimiter());
-		}
-		
-		if (fileDefinition.getDefaultTextQualifier() != null) {
-			setTextQualifier(fileDefinition.getDefaultTextQualifier());
-		}
 	}
 	
 	
-	public String getFieldDelimiter() {
-		return fieldDelimiter;
+	public String getSheetName() {
+		return sheetName;
 	}
 	
 	
-	public void setFieldDelimiter(String delimiter) {
-		fieldDelimiter = delimiter;
-	}
-	
-	
-	public String getTextQualifier() {
-		return textQualifier;
-	}
-	
-	
-	public void setTextQualifier(String qualifier) {
-		textQualifier = qualifier;
+	public void setSheetName(String name) {
+		sheetName = name;
 	}
 	
 	
@@ -150,12 +130,66 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	
 	
 	public boolean hasNext() {
-		return fileIterator.hasNext();
+		return excelFile.hasNext(getSheetName());
 	}
 	
 	
-	public Row next() {
-		return fileIterator.next();
+	public Row getNext() {
+		return excelFile.getNext(getSheetName());
+	}
+	
+	
+	public String getStringValue(Row row, String fieldName) {
+		String value = null;
+		String mappedFieldName = columnMapping.get(fieldName);	
+		if (mappedFieldName == null) {
+			throw new RuntimeException("Field \"" + fieldName + "\" not found");
+		}
+		else {
+			value = getMappedStringValue(row, mappedFieldName);
+		}
+		return value;
+	}
+	
+	
+	private String getMappedStringValue(Row row, String mappedFieldName) {
+		return excelFile.getStringValue(getSheetName(), row, mappedFieldName);
+	}
+	
+	
+	public Double getDoubleValue(Row row, String fieldName) {
+		Double value = null;
+		String mappedFieldName = columnMapping.get(fieldName);	
+		if (mappedFieldName == null) {
+			throw new RuntimeException("Field \"" + fieldName + "\" not found");
+		}
+		else {
+			value = getMappedDoubleValue(row, mappedFieldName);
+		}
+		return value;
+	}
+	
+	
+	private Double getMappedDoubleValue(Row row, String mappedFieldName) {
+		return excelFile.getDoubleValue(getSheetName(), row, mappedFieldName);
+	}
+	
+	
+	public Boolean getBooleanValue(Row row, String fieldName) {
+		Boolean value = null;
+		String mappedFieldName = columnMapping.get(fieldName);	
+		if (mappedFieldName == null) {
+			throw new RuntimeException("Field \"" + fieldName + "\" not found");
+		}
+		else {
+			value = getMappedBooleanValue(row, mappedFieldName);
+		}
+		return value;
+	}
+	
+	
+	private Boolean getMappedBooleanValue(Row row, String mappedFieldName) {
+		return excelFile.getBooleanValue(getSheetName(), row, mappedFieldName);
 	}
 	
 	
@@ -164,14 +198,29 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	public String get(Row row, String fieldName, boolean required) {
+	public String get(Row row, String fieldName) {
 		String value = null;
 		String mappedFieldName = columnMapping.get(fieldName);	
-		if (required && (mappedFieldName == null)) {
+		if (mappedFieldName == null) {
 			throw new RuntimeException("Field \"" + fieldName + "\" not found");
 		}
 		else {
-			value = row.get(mappedFieldName, required);
+			String cellStringValue = getMappedStringValue(row, mappedFieldName);
+			if (cellStringValue == null) {
+				Double cellDoubleValue = getMappedDoubleValue(row, mappedFieldName);
+				if (cellDoubleValue == null) {
+					Boolean cellBooleanValue = getMappedBooleanValue(row, mappedFieldName);
+					if (cellBooleanValue != null) {
+						value = cellBooleanValue ? "True" : "False";
+					}
+				}
+				else {
+					value = cellDoubleValue.toString();
+				}
+			}
+			else {
+				value = cellStringValue;
+			}
 		}
 		return value;
 	}
@@ -185,13 +234,12 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		fileDialog.setSize(500, 400);
 		MainFrame.setIcon(fileDialog);
 		fileDialog.setLocationRelativeTo(null);
-		fileDialog.setTitle("Input File Definition");
+		fileDialog.setTitle("Input Sheet Definition");
 		fileDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		// File section
 		JPanel fileSectionPanel = new JPanel(new BorderLayout());
 		fileSectionPanel.setBorder(BorderFactory.createTitledBorder(getLabelText()));
-		JPanel fileSectionSubPanel = new JPanel(new BorderLayout());
 		
 		JPanel fileDescriptionPanel = new JPanel(new BorderLayout());
 		fileDescriptionPanel.setBorder(BorderFactory.createEmptyBorder());
@@ -222,56 +270,20 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		fileChooserPanel.add(new JLabel("  "));
 		fileChooserPanel.add(fileButton);
 		
-		JPanel fileDelimiterPanel = new JPanel(new BorderLayout());
-		
-		JPanel fileDelimiterSubPanel = new JPanel(new FlowLayout());
-		fileDelimiterSubPanel.add(new JLabel("Delimiter:"));
-		ButtonGroup fieldDelimiterButtons = new ButtonGroup();
-		JRadioButton otherButton = null;
-		for (String delimiter : FIELD_DELIMITERS) {
-			JRadioButton radioButton = new JRadioButton(delimiter);
-			radioButton.setActionCommand(delimiter);
-			radioButton.setSelected(delimiter.equals(delimitedInputFile.getFieldDelimiter()));
-			fieldDelimiterButtons.add(radioButton);
-			fileDelimiterSubPanel.add(radioButton);
-			if (delimiter.equals("Other")) {
-				otherButton = radioButton;
-			}
-		}
-		final JRadioButton otherRadioButton = otherButton;
-
-		JTextField otherDelimiter = new JTextField("");
-		Dimension dimension = new Dimension(30, 20);
-		otherDelimiter.setDocument(new JTextFieldLimit(1));
-		otherDelimiter.setMinimumSize(dimension);
-		otherDelimiter.setMaximumSize(dimension);
-		otherDelimiter.setPreferredSize(dimension);
-		fileDelimiterSubPanel.add(otherDelimiter);
-		
-		fileDelimiterPanel.add(fileDelimiterSubPanel, BorderLayout.WEST);
-		
-		JPanel fileTextQualifierPanel = new JPanel(new BorderLayout());
-		
-		JPanel fileTextQualifierSubPanel = new JPanel(new FlowLayout());
-		fileTextQualifierSubPanel.add(new JLabel("Text qualifier:"));
-		ButtonGroup textQualifierButtons = new ButtonGroup();
-		for (String qualifier : TEXT_QUALIFIERS) {
-			JRadioButton radioButton = new JRadioButton(qualifier);
-			radioButton.setActionCommand(qualifier);
-			radioButton.setSelected(qualifier.equals(delimitedInputFile.getTextQualifier()));
-			textQualifierButtons.add(radioButton);
-			fileTextQualifierSubPanel.add(radioButton);
-		}
-		fileTextQualifierPanel.add(fileTextQualifierSubPanel, BorderLayout.WEST);
+		// Sheet section
+		JPanel sheetSectionPanel = new JPanel(new BorderLayout());
+		sheetSectionPanel.add(new JLabel("Sheet:"), BorderLayout.WEST);
+		JComboBox<String> sheetComboBox = new JComboBox<String>(new String[]{});
+		sheetSectionPanel.add(sheetComboBox, BorderLayout.CENTER);
 
 		fileSectionPanel.add(fileDescriptionPanel, BorderLayout.NORTH);
 		fileDescriptionPanel.add(fileChooserPanel, BorderLayout.SOUTH);
-		fileSectionPanel.add(fileSectionSubPanel, BorderLayout.SOUTH);
-		fileSectionSubPanel.add(fileDelimiterPanel, BorderLayout.NORTH);
-		fileSectionSubPanel.add(fileTextQualifierPanel, BorderLayout.SOUTH);
-		
+		fileSectionPanel.add(sheetSectionPanel, BorderLayout.SOUTH);
+				
 		// Mapping section
 		JPanel mappingSectionPanel = new JPanel(new BorderLayout());
+		
+		// Column mapping section
 		mappingSectionPanel.setBorder(BorderFactory.createTitledBorder("Column Mapping"));
 		
 		JPanel mappingScrollPanel = new JPanel(new BorderLayout());
@@ -327,9 +339,8 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fieldDelimiter = geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText());
-				String textQualifier = textQualifierButtons.getSelection().getActionCommand();
-				if (saveFileSettings(delimitedInputFile, fileField.getText(), fieldDelimiter, textQualifier, comboBoxList)) {
+				//TODO
+				if (saveFileSettings(delimitedInputFile, fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList)) {
 					fileDialog.dispose();
 				}				
 			}
@@ -353,41 +364,18 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectFile(fileDialog, fileField)) {
-					updateColumns(fileField.getText(), geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText()), comboBoxList);
+					updateColumns(fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList);
 				}
 			}
 		});
 		
-		// Delimiter selection action
-		for (Enumeration<AbstractButton> e = fieldDelimiterButtons.getElements(); e.hasMoreElements();) {
-			JRadioButton fieldDelimiterButton = (JRadioButton)e.nextElement();
-			fieldDelimiterButton.addActionListener(new ActionListener() {
-				
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					updateColumns(fileField.getText(), geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText()), comboBoxList);
+		sheetComboBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!sheetComboBox.getSelectedItem().toString().equals("")) {
+					
 				}
-			});
-		}
-		
-		otherDelimiter.getDocument().addDocumentListener(new DocumentListener() {
-			
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				otherRadioButton.setSelected(true);
-				updateColumns(fileField.getText(), geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText()), comboBoxList);
-			}
-			
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				otherRadioButton.setSelected(true);
-				updateColumns(fileField.getText(), geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText()), comboBoxList);
-			}
-			
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				otherRadioButton.setSelected(true);
-				updateColumns(fileField.getText(), geFieldDelimiterFromInput(fieldDelimiterButtons, otherDelimiter.getText()), comboBoxList);
 			}
 		});
 
@@ -395,7 +383,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		fileDialog.add(mappingSectionPanel, BorderLayout.CENTER);
 		fileDialog.add(buttonSectionPanel, BorderLayout.SOUTH);
 		
-		updateColumns(getFileName(), fieldDelimiter, comboBoxList);
+		updateColumns(getFileName(), getSheetName(), comboBoxList);
 		
 		fileDialog.setVisible(true);
 	}
@@ -410,7 +398,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	private boolean saveFileSettings(DelimitedInputFileGUI inputFile, String fileName, String fieldDelimiter, String textQualifier, List<JComboBox<String>> comboBoxList) {
+	private boolean saveFileSettings(DelimitedInputFileGUI inputFile, String fileName, String sheetName, List<JComboBox<String>> comboBoxList) {
 		boolean saveOK = false;
 		boolean columnMappingComplete = true;
 		for (int columnNr = 0; columnNr < inputFile.getColumns().size(); columnNr++) {
@@ -421,13 +409,10 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		}
 		if (
 				(!fileName.equals("")) &&
-				(!fieldDelimiter.equals("")) &&
-				(!textQualifier.equals("")) &&
+				(!sheetName.equals("")) &&
 				columnMappingComplete
 			) {
 			inputFile.setFileName(fileName);
-			inputFile.setFieldDelimiter(fieldDelimiter);
-			inputFile.setTextQualifier(textQualifier);
 			Map<String, String> columnMapping = new HashMap<String, String>();
 			int columnNr = 0;
 			for (String column : inputFile.getColumns()) {
@@ -440,18 +425,6 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 			}
 			inputFile.setColumnMapping(columnMapping);
 			saveOK = true;
-			/*
-			System.out.println("File name      : " + fileName);
-			System.out.println("Field delimiter: " + fieldDelimiter);
-			System.out.println("Text Qualifier : " + textQualifier);
-			columnNr = 0;
-			for (String column : inputFile.getColumns()) {
-				if (columnNr == 0) System.out.print("Column mapping : ");
-				else               System.out.print("                 ");
-				System.out.println(column + " -> " + (columnMapping.get(column) == null ? "" : columnMapping.get(column)));
-				columnNr++;
-			}
-			*/
 		}
 		else {
 			JOptionPane.showMessageDialog(null, "Settings are not complete!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -460,8 +433,14 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	private void updateColumns(String fileName, String fieldDelimiter, List<JComboBox<String>> comboBoxList) {
+	private void updateSheets(String fileName, JComboBox<String> sheetCombobox) {
+		
+	}
+	
+	
+	private void updateColumns(String fileName, String sheetName, List<JComboBox<String>> comboBoxList) {
 		if ((fileName != null) && (!fileName.equals(""))) {
+			/* TODO
 			String fileHeader = getFileHeader(fileName);
 			String[] columns = fileHeader.split(translateDelimiter(fieldDelimiter));
 			int columnNr = 0;
@@ -486,17 +465,14 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 				}
 				columnNr++;
 			}
+			*/
 		}
-	}
-	
-	
-	private String translateDelimiter(String delimiter) {
-		return delimiter.equals("Tab") ? "\t" : (delimiter.equals("Semicolon") ? ";" : (delimiter.equals("Comma") ? "," : (delimiter.equals("Space") ? " " : delimiter)));
 	}
 	
 	
 	private String getFileHeader(String fileName) {
 		String header = "";
+		/* TODO
 		try {
 			FileInputStream inputstream = new FileInputStream(fileName);
 			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputstream, CHAR_SET));
@@ -510,7 +486,53 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "Cannot read  file!", "Error", JOptionPane.ERROR_MESSAGE);
 		}
+		*/
 		return header;
+	}
+	
+	
+	public List<String> getSettings() {
+		List<String> settings = new ArrayList<String>();
+
+		settings.add("#");
+		settings.add("# " + getLabelText());
+		settings.add("#");
+		settings.add("");
+		settings.add(getLabelText() + ".filename=" + getFileName());
+		settings.add(getLabelText() + ".selected=" + (isSelected() ? "Yes" : "No"));
+		settings.add(getLabelText() + ".sheetName=" + getSheetName());
+		for (String column : getColumns()) {
+			settings.add(getLabelText() + ".column." + column + "=" + (getColumnMapping().get(column) == null ? "" : getColumnMapping().get(column)));
+		}
+		
+		return settings;
+	}
+	
+	
+	public void putSettings(List<String> settings) {
+		for (String setting : settings) {
+			if ((!setting.trim().equals("")) && (!setting.substring(0, 1).equals("#"))) {
+				int equalSignIndex = setting.indexOf("=");
+				String settingPath = setting.substring(0, equalSignIndex);
+				String value = setting.substring(equalSignIndex + 1).trim();
+				String[] settingPathSplit = settingPath.split("\\.");
+				if ((settingPathSplit.length > 0) && (settingPathSplit[0].equals(getLabelText()))) {
+					if ((settingPathSplit.length == 3) && (settingPathSplit[1].equals("column"))) { // Column mapping
+						if (getColumns().contains(settingPathSplit[2])) {
+							getColumnMapping().put(settingPathSplit[2], value);
+						}
+					}
+					else if (settingPathSplit.length == 2) {
+						if (settingPathSplit[1].equals("filename")) setFileName(value);
+						else if (settingPathSplit[1].equals("selected")) setSelected(value.toUpperCase().equals("YES"));
+						else if (settingPathSplit[1].equals("sheetName")) setSheetName(value);
+						else {
+							// Unknown setting
+						}
+					}
+				}
+			}
+		}
 	}
 
 
@@ -560,17 +582,13 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		if (getFileName() != null) {
 			File inputFile = new File(getFileName());
 			if (inputFile.exists() && inputFile.canRead()) {
-				char delimiter = fieldDelimiter(fieldDelimiter);
-				char textDelimiter = textQualifier(textQualifier);
-				
-				DelimitedFileWithHeader readFile = new DelimitedFileWithHeader(getFileName(), delimiter, textDelimiter);
-				if (readFile.openForReading()) {
+				excelFile = new ExcelFile(getFileName());
+				if (excelFile.getSheet(getSheetName(), true)) {
 					result = true;
-					fileIterator = readFile.iterator();
 				}
 				else {
 					if (!suppressError) {
-						JOptionPane.showMessageDialog(null, "Couldn't open file for reading!", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Cannot find sheet '" + getSheetName() + "' in file '" + getFileName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -583,5 +601,8 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		
 		return result;
 	}
+	
+	
+	
 
 }

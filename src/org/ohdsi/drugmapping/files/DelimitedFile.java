@@ -87,6 +87,11 @@ public class DelimitedFile implements Iterable<List<String>> {
 	}
 	
 	
+	public String getFileName() {
+		return fileName;
+	}
+	
+	
 	public boolean openForReading() {
 		boolean result = false;
 		try {

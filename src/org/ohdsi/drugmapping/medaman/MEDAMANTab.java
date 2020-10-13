@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.zindex;
+package org.ohdsi.drugmapping.medaman;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -23,19 +23,19 @@ import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.files.InputFileDefinition;
 import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.MainFrameTab;
-import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
+import org.ohdsi.drugmapping.gui.files.ExcelInputFileGUI;
 import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.gui.files.InputFileGUI;
 
-public class ZIndexTab extends MainFrameTab {
-	private static final long serialVersionUID = 8907817283501911409L;
+public class MEDAMANTab extends MainFrameTab {
+	private static final long serialVersionUID = 3889366258399726001L;
 
-	private static InputFileDefinition inputFileDefinition = new ZIndexPreprocessorInputFiles();
+	private static InputFileDefinition inputFileDefinition = new MEDAMANPreprocessorInputFiles();
 	
 	private List<InputFileGUI> inputFiles = new ArrayList<InputFileGUI>();
 
 	
-	public ZIndexTab(DrugMappingPreprocessor drugMapping, MainFrame mainFrame) {
+	public MEDAMANTab(DrugMappingPreprocessor drugMapping, MainFrame mainFrame) {
 		super();
 		
 		this.mainFrame = mainFrame;
@@ -193,8 +193,7 @@ public class ZIndexTab extends MainFrameTab {
 	
 	
 	public String getOutputFileName() {
-		DelimitedInputFileGUI gpkIPCIFile = getInputFile("ZIndex GPK IPCI Compositions File");
-		return "ZIndex" + (((gpkIPCIFile != null) && gpkIPCIFile.isSelected()) ? " IPCI" : "") + " - GPK" + ".csv";
+		return "MEDAMAN.csv";
 	}
 	
 	
@@ -203,12 +202,12 @@ public class ZIndexTab extends MainFrameTab {
 	}
 	
 	
-	public DelimitedInputFileGUI getInputFile(String fileName) {
-		DelimitedInputFileGUI file = null;
+	public InputFileGUI getInputFile(String fileName) {
+		InputFileGUI file = null;
 		
 		for (InputFileGUI inputFile : inputFiles) {
 			if (inputFile.getLabelText().equals(fileName)) {
-				file = (DelimitedInputFileGUI) inputFile;
+				file = inputFile;
 				break;
 			}
 		}
@@ -218,18 +217,11 @@ public class ZIndexTab extends MainFrameTab {
 	
 	
 	public void run(String outputFileName) {
-		logFileSettings("ZIndex GPK File", getInputFile("ZIndex GPK File"));
-		logFileSettings("ZIndex GSK File", getInputFile("ZIndex GSK File"));
-		logFileSettings("ZIndex GNK File", getInputFile("ZIndex GNK File"));
-		logFileSettings("ZIndex GPK Statistics File", getInputFile("ZIndex GPK Statistics File"));
-		logFileSettings("ZIndex GPK IPCI Compositions File", getInputFile("ZIndex GPK IPCI Compositions File"));
-		new ZIndexPreprocessor(
-				getInputFile("ZIndex GPK File"), 
-				getInputFile("ZIndex GSK File"), 
-				getInputFile("ZIndex GNK File"), 
-				getInputFile("ZIndex GPK Statistics File"), 
-				getInputFile("ZIndex GPK IPCI Compositions File"),
-				outputFileName
-				);
+		logFileSettings("MEDAMAN Drug File", getInputFile("MEDAMAN Drug File"));
+		logFileSettings("MEDAMAN ATC File", getInputFile("MEDAMAN ATC File"));
+		new MEDAMANPreprocessor(
+				(ExcelInputFileGUI) getInputFile("MEDAMAN Drug File"), 
+				(ExcelInputFileGUI) getInputFile("MEDAMAN ATC File"), 
+				getOutputFolder());
 	}
 }

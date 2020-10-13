@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.gui;
+package org.ohdsi.drugmapping.gui.files;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -9,7 +9,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -29,13 +31,16 @@ public abstract class InputFileGUI extends JPanel {
 	private static final int FILE_LABEL_SIZE = 260;
 	
 	private static String currentDirectory = System.getProperty("user.dir");
-		
+	
+	
 	public static InputFileGUI getInputFile(Component parent, FileDefinition fileDefinition) {
 		if (fileDefinition.getFileType() == FileDefinition.GENERAL_FILE)   return new GeneralInputFileGUI(parent, fileDefinition);
 		if (fileDefinition.getFileType() == FileDefinition.DELIMITED_FILE) return new DelimitedInputFileGUI(parent, fileDefinition);
+		if (fileDefinition.getFileType() == FileDefinition.EXCEL_FILE)     return new ExcelInputFileGUI(parent, fileDefinition);
 		if (fileDefinition.getFileType() == FileDefinition.XML_FILE)       return new XMLInputFileGUI(parent, fileDefinition);
 		return null;
 	}
+	
 	
 	private String fileName = null;
 	private String labelText;
@@ -141,6 +146,11 @@ public abstract class InputFileGUI extends JPanel {
 	}
 	
 	
+	public int getFileType() {
+		return fileDefinition.getFileType();
+	}
+	
+	
 	public void setFileName(String fileName) {
 		fileNameField.setText(fileName);
 		this.fileName = fileName;
@@ -174,6 +184,26 @@ public abstract class InputFileGUI extends JPanel {
 	
 	public void setSelected(boolean selected) {
 		fileSelectCheckBox.setSelected(selected);
+	}
+	
+	
+	public String getFieldDelimiter() {
+		return "";
+	}
+	
+	
+	public String getTextQualifier() {
+		return "";
+	}
+	
+	
+	public List<String> getColumns() {
+		return new ArrayList<String>();
+	}
+	
+	
+	public Map<String, String> getColumnMapping() {
+		return new HashMap<String, String>();
 	}
 	
 	
@@ -222,14 +252,6 @@ public abstract class InputFileGUI extends JPanel {
 		settings.add("");
 		settings.add(getLabelText() + ".filename=" + getFileName());
 		settings.add(getLabelText() + ".selected=" + (isSelected() ? "Yes" : "No"));
-		if (getFileDefinition().getFileType() == FileDefinition.DELIMITED_FILE) {
-			DelimitedInputFileGUI thisInputFileGUI = (DelimitedInputFileGUI) this;
-			settings.add(getLabelText() + ".fieldDelimiter=" + thisInputFileGUI.getFieldDelimiter());
-			settings.add(getLabelText() + ".textQualifier=" + thisInputFileGUI.getTextQualifier());
-			for (String column : thisInputFileGUI.getColumns()) {
-				settings.add(getLabelText() + ".column." + column + "=" + (thisInputFileGUI.getColumnMapping().get(column) == null ? "" : thisInputFileGUI.getColumnMapping().get(column)));
-			}
-		}
 		
 		return settings;
 	}
@@ -243,20 +265,9 @@ public abstract class InputFileGUI extends JPanel {
 				String value = setting.substring(equalSignIndex + 1).trim();
 				String[] settingPathSplit = settingPath.split("\\.");
 				if ((settingPathSplit.length > 0) && (settingPathSplit[0].equals(getLabelText()))) {
-					DelimitedInputFileGUI thisInputFileGUI = null;
-					if (getFileDefinition().getFileType() == FileDefinition.DELIMITED_FILE) {
-						thisInputFileGUI = (DelimitedInputFileGUI) this;
-					}
-					if ((settingPathSplit.length == 3) && (settingPathSplit[1].equals("column")) && (thisInputFileGUI != null)) { // Column mapping
-						if (thisInputFileGUI.getColumns().contains(settingPathSplit[2])) {
-							thisInputFileGUI.getColumnMapping().put(settingPathSplit[2], value);
-						}
-					}
-					else if (settingPathSplit.length == 2) {
+					if (settingPathSplit.length == 2) {
 						if (settingPathSplit[1].equals("filename")) setFileName(value);
-						else if (settingPathSplit[1].equals("fieldDelimiter") && (thisInputFileGUI != null)) thisInputFileGUI.setFieldDelimiter(value);
 						else if (settingPathSplit[1].equals("selected")) setSelected(value.toUpperCase().equals("YES"));
-						else if (settingPathSplit[1].equals("textQualifier") && (thisInputFileGUI != null)) thisInputFileGUI.setTextQualifier(value);
 						else {
 							// Unknown setting
 						}

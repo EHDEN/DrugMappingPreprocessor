@@ -15,6 +15,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.GeneralSettings;
+import org.ohdsi.drugmapping.files.FileDefinition;
+import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
+import org.ohdsi.drugmapping.gui.files.Folder;
+import org.ohdsi.drugmapping.gui.files.InputFileGUI;
 
 public class MainFrameTab extends JPanel {
 	private static final long serialVersionUID = -2611669075696826114L;
@@ -160,17 +164,22 @@ public class MainFrameTab extends JPanel {
 	}
 	
 	
-	public void logFileSettings(String fileId, DelimitedInputFileGUI file) {
+	public void logFileSettings(String fileId, InputFileGUI file) {
 		if (file.getFileName() != null) {
 			System.out.println("Input File: " + fileId);
 			System.out.println("  Filename: " + file.getFileName());
-			System.out.println("  Field delimiter: '" + file.getFieldDelimiter() + "'");
-			System.out.println("  Text qualifier: '" + file.getTextQualifier() + "'");
-			System.out.println("  Fields:");
-			List<String> columns = file.getColumns();
-			Map<String, String> columnMapping = file.getColumnMapping();
-			for (String column : columns) {
-				System.out.println("    " + column + " -> " + columnMapping.get(column));
+			System.out.println("  File type: " + FileDefinition.getFileTypeName(file.getFileType()));
+			if (file.getFileType() == FileDefinition.DELIMITED_FILE) {
+				System.out.println("  Field delimiter: '" + file.getFieldDelimiter() + "'");
+				System.out.println("  Text qualifier: '" + file.getTextQualifier() + "'");
+			}
+			if ((file.getFileType() == FileDefinition.DELIMITED_FILE) || (file.getFileType() == FileDefinition.EXCEL_FILE)) {
+				System.out.println("  Fields:");
+				List<String> columns = file.getColumns();
+				Map<String, String> columnMapping = file.getColumnMapping();
+				for (String column : columns) {
+					System.out.println("    " + column + " -> " + columnMapping.get(column));
+				}
 			}
 			System.out.println();
 		}

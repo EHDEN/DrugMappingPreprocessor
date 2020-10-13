@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.gui;
+package org.ohdsi.drugmapping.gui.files;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;

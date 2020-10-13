@@ -6,7 +6,17 @@ import java.util.List;
 public class FileDefinition {
 	public static final int GENERAL_FILE   = 0;
 	public static final int DELIMITED_FILE = 1;
-	public static final int XML_FILE       = 2;
+	public static final int EXCEL_FILE     = 2;
+	public static final int XML_FILE       = 3;
+	
+	
+	public static String getFileTypeName(int fileType) {
+		if      (fileType == GENERAL_FILE)   return "General File";
+		else if (fileType == DELIMITED_FILE) return "Delimited File";
+		else if (fileType == EXCEL_FILE)     return "Excel File";
+		else if (fileType == XML_FILE)       return "XML File";
+		else                                 return "Unkown";
+	}
 	
 	private String fileName;
 	private List<String> description = new ArrayList<String>();

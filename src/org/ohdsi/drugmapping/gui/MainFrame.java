@@ -19,6 +19,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
+import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.zindex.ZIndexTab;
 
 public class MainFrame {
