@@ -17,7 +17,8 @@ public class MEDAMANPreprocessor {
 
 	
 	public MEDAMANPreprocessor(ExcelInputFileGUI drugsFile, ExcelInputFileGUI atcFile, Folder outputFolder) {
-		
+		getData(atcFile);
+		writeCSVFile(drugsFile, outputFolder.getFolderName());
 	}
 	
 	
@@ -34,7 +35,9 @@ public class MEDAMANPreprocessor {
 				String atcCode  = atcFile.get(row, "ATC").trim();
 				
 				if ((drugCode != null) && (!drugCode.equals("")) && (atcCode != null) && (!atcCode.equals(""))) {
-					atcMap.put(drugCode, atcCode);
+					if ((!atcCode.equals("X00XX00")) && (!atcCode.equals("Z99ZZ99"))) {
+						atcMap.put(drugCode, atcCode);
+					}
 				}
 			}
 		}
