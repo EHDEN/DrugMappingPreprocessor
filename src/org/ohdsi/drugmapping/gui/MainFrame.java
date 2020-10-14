@@ -7,6 +7,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.gui.files.Folder;
-import org.ohdsi.drugmapping.zindex.ZIndexTab;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
+import org.ohdsi.drugmapping.preprocessors.medaman.MEDAMAN;
+import org.ohdsi.drugmapping.preprocessors.zindex.ZIndex;
 
 public class MainFrame {
 	
@@ -43,15 +47,14 @@ public class MainFrame {
 	public static int SAVE_DRUGMAPPING_LOG;
 	public static int SUPPRESS_WARNINGS;
 	
-	private DrugMappingPreprocessor drugMappingPreprocessor;
 	private JFrame frame;
 	JMenuItem loadFileSettingsMenuItem;
 	JMenuItem saveFileSettingsMenuItem;
 	JMenuItem loadGeneralSettingsMenuItem ;
 	JMenuItem saveGeneralSettingsMenuItem;
-	private JTabbedPane tabbedPane;
+	private JTabbedPane preprocessorsPane;
 
-	private Map<String, MainFrameTab> tabs = new HashMap<String, MainFrameTab>();
+	List<Preprocessor> preprocessors = new ArrayList<Preprocessor>();
 	
 
 	/**
@@ -73,7 +76,13 @@ public class MainFrame {
 	
 	
 	public MainFrame(DrugMappingPreprocessor drugMappingPreprocessor) {
-		this.drugMappingPreprocessor = drugMappingPreprocessor;
+		super();
+		
+		// Define the available preprocessors
+		preprocessors = new ArrayList<Preprocessor>();
+		preprocessors.add(new ZIndex(drugMappingPreprocessor, this));
+		preprocessors.add(new MEDAMAN(drugMappingPreprocessor, this));
+		
 		createInterface();
 	}
 	
@@ -114,12 +123,15 @@ public class MainFrame {
 		frame.setJMenuBar(menuBar);
 		DrugMappingPreprocessor.disableWhenRunning(menuBar);
 		
-		tabbedPane = new JTabbedPane();
-		DrugMappingPreprocessor.disableWhenRunning(tabbedPane);
+		preprocessorsPane = new JTabbedPane();
+		DrugMappingPreprocessor.disableWhenRunning(preprocessorsPane);
 		
-		addTab("ZIndex", new ZIndexTab(drugMappingPreprocessor, this));
+		Collections.sort(preprocessors);
+		for (Preprocessor preprocessor : preprocessors) {
+			preprocessorsPane.addTab(preprocessor.getPreprocessorName(), preprocessor);
+		}
 		
-		frame.add(tabbedPane, BorderLayout.CENTER);
+		frame.add(preprocessorsPane, BorderLayout.CENTER);
 		
 		return frame;
 	}
@@ -145,7 +157,7 @@ public class MainFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				getCurrentTab().saveFileSettingsFile();
+				getCurrentPreprocessor().saveFileSettingsFile();
 			}
 		});
 		file.add(saveFileSettingsMenuItem);
@@ -167,7 +179,7 @@ public class MainFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				getCurrentTab().saveGeneralSettingsFile();
+				getCurrentPreprocessor().saveGeneralSettingsFile();
 			}
 		});
 		file.add(saveGeneralSettingsMenuItem);
@@ -202,46 +214,47 @@ public class MainFrame {
 	}
 	
 	
-	private void addTab(String tabName, MainFrameTab tab) {
-		tabbedPane.addTab(tabName, tab);
-		tabs.put(tabName.toLowerCase(), tab);
-	}
-	
-	
-	private void enableDisableMenus(String tabName) {
-		MainFrameTab tab = tabs.get(tabName.toLowerCase());
-		if (tab != null) {
-			loadFileSettingsMenuItem.setEnabled(tab.hasFileSettings());
-			saveFileSettingsMenuItem.setEnabled(tab.hasFileSettings());
-			loadGeneralSettingsMenuItem.setEnabled(tab.hasGeneralSettings());
-			saveGeneralSettingsMenuItem.setEnabled(tab.hasGeneralSettings());
+	private void enableDisableMenus(String preprocessorName) {
+		Preprocessor preprocessor = getPreprocessor(preprocessorName);
+		if (preprocessor != null) {
+			loadFileSettingsMenuItem.setEnabled(preprocessor.hasFileSettings());
+			saveFileSettingsMenuItem.setEnabled(preprocessor.hasFileSettings());
+			loadGeneralSettingsMenuItem.setEnabled(preprocessor.hasGeneralSettings());
+			saveGeneralSettingsMenuItem.setEnabled(preprocessor.hasGeneralSettings());
 		}
 	}
 	
 	
-	public MainFrameTab getTab(String tabName) {
-		tabName = tabName.toLowerCase();
-		return tabs.get(tabName);
+	public Preprocessor getPreprocessor(String preprocessorName) {
+		preprocessorName = preprocessorName.toLowerCase();
+		Preprocessor result = null;
+		for (Preprocessor preprocessor : preprocessors) {
+			if (preprocessor.getPreprocessorName().toLowerCase().equals(preprocessorName)) {
+				result = preprocessor;
+				break;
+			}
+		}
+		return result;
 	}
 	
 	
-	public MainFrameTab getCurrentTab() {
-		return getTab(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
+	public Preprocessor getCurrentPreprocessor() {
+		return getPreprocessor(preprocessorsPane.getTitleAt(preprocessorsPane.getSelectedIndex()));
 	}
 	
 	
-	public boolean selectTab(String tabName) {
-		tabName = tabName.toLowerCase();
+	public boolean selectPreprocessor(String preprocessorName) {
+		preprocessorName = preprocessorName.toLowerCase();
 		int index = -1;
-		for (int tabNr = 0; tabNr < tabbedPane.getTabCount(); tabNr++) {
-			if (tabbedPane.getTitleAt(tabNr).toLowerCase().equals(tabName)) {
+		for (int tabNr = 0; tabNr < preprocessorsPane.getTabCount(); tabNr++) {
+			if (preprocessorsPane.getTitleAt(tabNr).toLowerCase().equals(preprocessorName)) {
 				index = tabNr;
 				break;
 			}
 		}
 		if (index != -1) {
-			tabbedPane.setSelectedIndex(index);
-			enableDisableMenus(tabName);
+			preprocessorsPane.setSelectedIndex(index);
+			enableDisableMenus(preprocessorName);
 		}
 		
 		return (index != -1);
@@ -249,26 +262,26 @@ public class MainFrame {
 
 	
 	public void loadFileSettingsFile(List<String> fileSettings) {
-		MainFrameTab tab = getTab(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
-		if (tab != null) {
-			tab.loadFileSettingsFile(fileSettings);
+		Preprocessor preprocessor = getPreprocessor(preprocessorsPane.getTitleAt(preprocessorsPane.getSelectedIndex()));
+		if (preprocessor != null) {
+			preprocessor.loadFileSettingsFile(fileSettings);
 		}
 	}
 
 	
 	public void loadGeneralSettingsFile(List<String> generalSettings) {
-		MainFrameTab tab = getTab(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
-		if (tab != null) {
-			tab.loadGeneralSettingsFile(generalSettings);
+		Preprocessor preprocessor = getPreprocessor(preprocessorsPane.getTitleAt(preprocessorsPane.getSelectedIndex()));
+		if (preprocessor != null) {
+			preprocessor.loadGeneralSettingsFile(generalSettings);
 		}
 	}
 	
 	
 	public List<String> readSettingsFromFile(String settingsFileName, boolean mandatory) {
 		List<String> settings = null;
-		MainFrameTab tab = getTab(tabbedPane.getTitleAt(tabbedPane.getSelectedIndex()));
-		if (tab != null) {
-			settings = tab.readSettingsFromFile(settingsFileName, mandatory);
+		Preprocessor preprocessor = getPreprocessor(preprocessorsPane.getTitleAt(preprocessorsPane.getSelectedIndex()));
+		if (preprocessor != null) {
+			settings = preprocessor.readSettingsFromFile(settingsFileName, mandatory);
 		}
 		return settings;
 	}
@@ -280,22 +293,22 @@ public class MainFrame {
 	
 	
 	public Folder getOutputFolder() {
-		return getCurrentTab().getOutputFolder();
+		return getCurrentPreprocessor().getOutputFolder();
 	}
 	
 	
 	public String getOutputFileName() {
-		return getCurrentTab().getOutputFileName();
+		return getCurrentPreprocessor().getOutputFileName();
 	}
 	
 	
 	public void setLogFile(String logFile) {
-		getCurrentTab().setLogFile(logFile);
+		getCurrentPreprocessor().setLogFile(logFile);
 	}
 	
 	
 	public void closeLogFile() {
-		getCurrentTab().closeLogFile();
+		getCurrentPreprocessor().closeLogFile();
 	}
 
 }

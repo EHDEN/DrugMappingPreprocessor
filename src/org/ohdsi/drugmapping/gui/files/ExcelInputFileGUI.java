@@ -2,50 +2,34 @@ package org.ohdsi.drugmapping.gui.files;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.apache.poi.ss.usermodel.Row;
-import org.ohdsi.drugmapping.files.DelimitedFileWithHeader;
 import org.ohdsi.drugmapping.files.ExcelFile;
 import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
-import org.ohdsi.drugmapping.gui.JTextFieldLimit;
 import org.ohdsi.drugmapping.gui.MainFrame;
 
 public class ExcelInputFileGUI extends InputFileGUI {
@@ -57,21 +41,6 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	private Map<String, String> columnMapping = new HashMap<String, String>();
 	
 	private ExcelFile excelFile = null;
-	
-	
-	public static char fieldDelimiter(String delimiterName) {
-		if (delimiterName.equals("Tab")) return '\t';
-		if (delimiterName.equals("Semicolon")) return ';';
-		if (delimiterName.equals("Comma")) return ',';
-		if (delimiterName.equals("Space")) return ' ';
-		return delimiterName.charAt(0);
-	}
-	
-	
-	public static char textQualifier(String textQualifierName) {
-		if (textQualifierName.equals("None")) return (char) 0;
-		return textQualifierName.charAt(0);
-	}
 	
 	
 	public ExcelInputFileGUI(Component parent, FileDefinition fileDefinition) {
@@ -117,6 +86,19 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
+	public Integer getColumnNr(String fieldName) {
+		Integer columnNr = null;
+		String mappedFieldName = columnMapping.get(fieldName);	
+		if (mappedFieldName == null) {
+			throw new RuntimeException("Field \"" + fieldName + "\" not found");
+		}
+		else {
+			columnNr = excelFile.getColumnNr(sheetName, mappedFieldName);
+		}
+		return columnNr;
+	}
+	
+	
 	public boolean fileExists() {
 		boolean exists = false;
 		if (getFileName() != null) {
@@ -157,6 +139,11 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
+	public String getStringValue(Row row, Integer fieldNr) {
+		return excelFile.getStringValue(row, fieldNr);
+	}
+	
+	
 	public Double getDoubleValue(Row row, String fieldName) {
 		Double value = null;
 		String mappedFieldName = columnMapping.get(fieldName);	
@@ -175,6 +162,11 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
+	public Double getDoubleValue(Row row, Integer fieldNr) {
+		return excelFile.getDoubleValue(row, fieldNr);
+	}
+	
+	
 	public Boolean getBooleanValue(Row row, String fieldName) {
 		Boolean value = null;
 		String mappedFieldName = columnMapping.get(fieldName);	
@@ -185,6 +177,11 @@ public class ExcelInputFileGUI extends InputFileGUI {
 			value = getMappedBooleanValue(row, mappedFieldName);
 		}
 		return value;
+	}
+	
+	
+	public Boolean getBooleanValue(Row row, Integer fieldNr) {
+		return excelFile.getBooleanValue(row, fieldNr);
 	}
 	
 	
@@ -226,8 +223,114 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
+	public String get(Row row, Integer fieldNr) {
+		String value = null;
+		String cellStringValue = getStringValue(row, fieldNr);
+		if (cellStringValue == null) {
+			Double cellDoubleValue = getDoubleValue(row, fieldNr);
+			if (cellDoubleValue == null) {
+				Boolean cellBooleanValue = getBooleanValue(row, fieldNr);
+				if (cellBooleanValue != null) {
+					value = cellBooleanValue ? "True" : "False";
+				}
+			}
+			else {
+				value = cellDoubleValue.toString();
+			}
+		}
+		else {
+			value = cellStringValue;
+		}
+		return value;
+	}
+	
+	
+	public Integer getAsInteger(Row row, String fieldName) {
+		Integer result = null;
+		
+		String resultString = get(row, fieldName);
+		try {
+			result = (int) Math.round(Double.parseDouble(resultString));
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
+	public Integer getAsInteger(Row row, Integer fieldNr) {
+		Integer result = null;
+		
+		String resultString = get(row, fieldNr);
+		try {
+			result = (int) Math.round(Double.parseDouble(resultString));
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
+	public Long getAsLong(Row row, String fieldName) {
+		Long result = null;
+		
+		String resultString = get(row, fieldName);
+		try {
+			result = (long) Math.round(Double.parseDouble(resultString));
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
+	public Long getAsLong(Row row, Integer fieldNr) {
+		Long result = null;
+		
+		String resultString = get(row, fieldNr);
+		try {
+			result = (long) Math.round(Double.parseDouble(resultString));
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
+	public Double getAsDouble(Row row, String fieldName) {
+		Double result = null;
+		
+		String resultString = get(row, fieldName);
+		try {
+			result = Double.parseDouble(resultString);
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
+	public Double getAsDouble(Row row, Integer fieldNr) {
+		Double result = null;
+		
+		String resultString = get(row, fieldNr);
+		try {
+			result = Double.parseDouble(resultString);
+		} catch (NumberFormatException e) {
+			result = null;
+		}
+		
+		return result;
+	}
+	
+	
 	void defineFile(InputFileGUI inputFile) {
-		DelimitedInputFileGUI delimitedInputFile = (DelimitedInputFileGUI) inputFile;
+		ExcelInputFileGUI excelInputFile = (ExcelInputFileGUI) inputFile;
 		JDialog fileDialog = new JDialog();
 		fileDialog.setLayout(new BorderLayout());
 		fileDialog.setModal(true);
@@ -238,7 +341,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		fileDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		// File section
-		JPanel fileSectionPanel = new JPanel(new BorderLayout());
+		JPanel fileSectionPanel = new JPanel(new GridLayout(0, 1));
 		fileSectionPanel.setBorder(BorderFactory.createTitledBorder(getLabelText()));
 		
 		JPanel fileDescriptionPanel = new JPanel(new BorderLayout());
@@ -260,7 +363,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		fileChooserPanel.setLayout(new BoxLayout(fileChooserPanel, BoxLayout.X_AXIS));
 		fileChooserPanel.setBorder(BorderFactory.createEmptyBorder());
 		
-		JTextField fileField = new JTextField(delimitedInputFile.getFileName());
+		JTextField fileField = new JTextField(excelInputFile.getFileName());
 		fileField.setEditable(false);
 		
 		JButton fileButton = new JButton("Browse");
@@ -340,7 +443,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//TODO
-				if (saveFileSettings(delimitedInputFile, fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList)) {
+				if (saveFileSettings(excelInputFile, fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList)) {
 					fileDialog.dispose();
 				}				
 			}
@@ -389,16 +492,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	private String geFieldDelimiterFromInput(ButtonGroup fieldDelimiterButtons, String otherDelimiter) {
-		String fieldDelimiter = fieldDelimiterButtons.getSelection().getActionCommand();
-		if (fieldDelimiter.equals("Other")) {
-			fieldDelimiter = otherDelimiter;
-		}
-		return fieldDelimiter;
-	}
-	
-	
-	private boolean saveFileSettings(DelimitedInputFileGUI inputFile, String fileName, String sheetName, List<JComboBox<String>> comboBoxList) {
+	private boolean saveFileSettings(ExcelInputFileGUI inputFile, String fileName, String sheetName, List<JComboBox<String>> comboBoxList) {
 		boolean saveOK = false;
 		boolean columnMappingComplete = true;
 		for (int columnNr = 0; columnNr < inputFile.getColumns().size(); columnNr++) {
@@ -583,12 +677,19 @@ public class ExcelInputFileGUI extends InputFileGUI {
 			File inputFile = new File(getFileName());
 			if (inputFile.exists() && inputFile.canRead()) {
 				excelFile = new ExcelFile(getFileName());
-				if (excelFile.getSheet(getSheetName(), true)) {
-					result = true;
+				if (excelFile.open()) {
+					if (excelFile.getSheet(getSheetName(), true)) {
+						result = true;
+					}
+					else {
+						if (!suppressError) {
+							JOptionPane.showMessageDialog(null, "Cannot find sheet '" + getSheetName() + "' in file '" + getFileName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
 				}
 				else {
 					if (!suppressError) {
-						JOptionPane.showMessageDialog(null, "Cannot find sheet '" + getSheetName() + "' in file '" + getFileName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
+						JOptionPane.showMessageDialog(null, "Cannot open workbook in file '" + getFileName() + "'!", "Error", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}

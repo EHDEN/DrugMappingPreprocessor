@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.zindex;
+package org.ohdsi.drugmapping.preprocessors.zindex;
 
 import java.io.File;
 import java.io.FileNotFoundException;

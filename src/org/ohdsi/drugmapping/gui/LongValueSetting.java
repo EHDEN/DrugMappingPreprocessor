@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 
 public class LongValueSetting extends Setting {
@@ -21,7 +22,7 @@ public class LongValueSetting extends Setting {
 	private Long value = null;
 
 	
-	public LongValueSetting(MainFrameTab mainFrameTab, String name, String label, Long defaultValue) {
+	public LongValueSetting(Preprocessor mainFrameTab, String name, String label, Long defaultValue) {
 		valueType = Setting.SETTING_TYPE_LONG;
 		this.name = name;
 		this.label = label;

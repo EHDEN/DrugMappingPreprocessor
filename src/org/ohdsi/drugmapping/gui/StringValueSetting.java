@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class StringValueSetting extends Setting {
 	private static final long serialVersionUID = 6643498008378245661L;
@@ -20,7 +21,7 @@ public class StringValueSetting extends Setting {
 	String value;
 	
 	
-	public StringValueSetting(MainFrameTab mainFrameTab, String name, String label, String defaultValue) {
+	public StringValueSetting(Preprocessor mainFrameTab, String name, String label, String defaultValue) {
 		valueType = Setting.SETTING_TYPE_STRING;
 		this.name = name;
 		this.label = label;

@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class ChoiceValueSetting extends Setting {
 	private static final long serialVersionUID = -5697418430701146284L;
@@ -24,7 +25,7 @@ public class ChoiceValueSetting extends Setting {
 	String value = null;
 	
 	
-	public ChoiceValueSetting(MainFrameTab mainFrameTab, String name, String label, String[] choices, String defaultValue) {
+	public ChoiceValueSetting(Preprocessor mainFrameTab, String name, String label, String[] choices, String defaultValue) {
 		valueType = Setting.SETTING_TYPE_STRING;
 		this.name = name;
 		this.label = label;

@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.zindex;
+package org.ohdsi.drugmapping.preprocessors.zindex;
 
 import java.util.ArrayList;
 import java.util.Arrays;

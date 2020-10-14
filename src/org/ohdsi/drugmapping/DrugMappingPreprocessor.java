@@ -9,7 +9,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import org.ohdsi.drugmapping.gui.MainFrame;
-import org.ohdsi.drugmapping.gui.MainFrameTab;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.utilities.DrugMappingFileUtilities;
 
 public class DrugMappingPreprocessor { 
@@ -57,10 +57,10 @@ public class DrugMappingPreprocessor {
 		debug = (parameters.get("debug") != null);
 		
 		mainFrame = new MainFrame(this);
-		MainFrameTab tab = null;
+		Preprocessor tab = null;
 		if (parameters.containsKey("preprocessor")) {
 			String preprocessor = parameters.get("preprocessor").toLowerCase();
-			tab = mainFrame.getTab(preprocessor);
+			tab = mainFrame.getPreprocessor(preprocessor);
 			
 			if (tab != null) {
 				if (parameters.containsKey("filesettings")) {
@@ -75,7 +75,7 @@ public class DrugMappingPreprocessor {
 				if (generalSettings != null) {
 					tab.loadGeneralSettingsFile(generalSettings);
 				}
-				mainFrame.selectTab(preprocessor);
+				mainFrame.selectPreprocessor(preprocessor);
 				
 				if (parameters.containsKey("autostart")) {
 					autoStart = parameters.get("autostart").toLowerCase().equals("yes");
@@ -117,7 +117,8 @@ public class DrugMappingPreprocessor {
 			for (JComponent component : componentsToDisableWhenRunning)
 				component.setEnabled(false);
 			
-			mainFrame.getCurrentTab().run(outputFileName);
+			mainFrame.getCurrentPreprocessor().redirectSystemOutput();
+			mainFrame.getCurrentPreprocessor().run(outputFileName);
 
 			mainFrame.closeLogFile();
 			

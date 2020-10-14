@@ -12,6 +12,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
+import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class DoubleValueSetting extends Setting {
 	private static final long serialVersionUID = -3800881489329031554L;
@@ -20,7 +21,7 @@ public class DoubleValueSetting extends Setting {
 	Double value;
 	
 	
-	public DoubleValueSetting(MainFrameTab mainFrameTab, String name, String label, Double defaultValue) {
+	public DoubleValueSetting(Preprocessor mainFrameTab, String name, String label, Double defaultValue) {
 		valueType = Setting.SETTING_TYPE_DOUBLE;
 		this.name = name;
 		this.label = label;

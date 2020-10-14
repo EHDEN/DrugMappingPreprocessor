@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.medaman;
+package org.ohdsi.drugmapping.preprocessors.medaman;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -105,6 +105,21 @@ public class MEDAMANPreprocessorInputFiles extends InputFileDefinition {
 												"ATC",
 												new String[] {
 														"This is the ATC code of the drug."
+												}
+										)
+								}
+						),
+						new FileDefinition(
+								"MEDAMAN ScanReport File",
+								new String[] {
+										"This file should contain the WhiteRabbit drugs scanreport of MEDAMAN."
+						  		},
+								FileDefinition.EXCEL_FILE,
+								new FileColumnDefinition[] {
+										new FileColumnDefinition(
+												"DrugCode",
+												new String[] {
+														"This is the code of the drug. The count is in the next column."
 												}
 										)
 								}
