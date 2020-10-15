@@ -13,30 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.ohdsi.utilities.files;
+package org.ohdsi.drugmapping.files;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ohdsi.utilities.StringUtilities;
+import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
-public class Row {
+public class DelimitedFileRow {
 	private List<String>			cells;
 	private Map<String, Integer>	fieldName2ColumnIndex;
 	
-	public Row() {
+	public DelimitedFileRow() {
 		fieldName2ColumnIndex = new HashMap<String, Integer>();
 		cells = new ArrayList<String>();
 	}
 	
-	public Row(List<String> cells, Map<String, Integer> fieldName2ColumnIndex) {
+	public DelimitedFileRow(List<String> cells, Map<String, Integer> fieldName2ColumnIndex) {
 		this.cells = cells;
 		this.fieldName2ColumnIndex = fieldName2ColumnIndex;
 	}
 	
-	public Row(Row row) {
+	public DelimitedFileRow(DelimitedFileRow row) {
 		cells = new ArrayList<String>(row.cells);
 		fieldName2ColumnIndex = new HashMap<String, Integer>(row.fieldName2ColumnIndex);
 	}
@@ -134,7 +134,7 @@ public class Row {
 			if (data.size() > index)
 				data.set(index, "[" + fieldName + ": " + data.get(index) + "]");
 		}
-		return StringUtilities.join(data, ",");
+		return DrugMappingStringUtilities.join(data, ",");
 	}
 	
 	public void remove(String field) {

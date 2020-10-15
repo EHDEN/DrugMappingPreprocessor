@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.ohdsi.drugmapping.files.Row;
+import org.ohdsi.drugmapping.files.DelimitedFileRow;
 import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
 import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingNumberUtilities;
@@ -109,7 +109,7 @@ public class ZIndexPreprocessor {
 			try {
 				if (gnkFile.openFileForReading()) {
 					while (gnkFile.hasNext()) {
-						Row row = gnkFile.next();
+						DelimitedFileRow row = gnkFile.next();
 
 						String[] gnk = new String[GNK_ColumnCount];
 						gnk[GNK_GNKCode]         = DrugMappingStringUtilities.removeExtraSpaces(gnkFile.get(row, "GNKCode", true));
@@ -155,7 +155,7 @@ public class ZIndexPreprocessor {
 			try {
 				if (gskFile.openFileForReading()) {
 					while (gskFile.hasNext()) {
-						Row row = gskFile.next();
+						DelimitedFileRow row = gskFile.next();
 
 						String[] gsk = new String[GSK_ColumnCount];
 						gsk[GSK_GSKCode]       = DrugMappingStringUtilities.removeExtraSpaces(gskFile.get(row, "GSKCode", true));
@@ -198,7 +198,7 @@ public class ZIndexPreprocessor {
 			try {
 				if (gpkFile.openFileForReading()) {
 					while (gpkFile.hasNext()) {
-						Row row = gpkFile.next();
+						DelimitedFileRow row = gpkFile.next();
 
 						String[] gpk = new String[GPK_ColumnCount];
 						gpk[GPK_GPKCode]          = DrugMappingStringUtilities.removeExtraSpaces(gpkFile.get(row, "GPKCode", true));
@@ -257,7 +257,7 @@ public class ZIndexPreprocessor {
 			try {
 				if (gpkStatsFile.openFileForReading()) {
 					while (gpkStatsFile.hasNext()) {
-						Row row = gpkStatsFile.next();
+						DelimitedFileRow row = gpkStatsFile.next();
 
 						String gpkCode  = DrugMappingStringUtilities.removeExtraSpaces(gpkStatsFile.get(row, "GPKCode", true));
 						String gpkCount = DrugMappingStringUtilities.removeExtraSpaces(gpkStatsFile.get(row, "GPKCount", true));
@@ -291,7 +291,7 @@ public class ZIndexPreprocessor {
 					if (gpkIPCIFile.openFileForReading()) {
 						
 						while (gpkIPCIFile.hasNext()) {
-							Row row = gpkIPCIFile.next();
+							DelimitedFileRow row = gpkIPCIFile.next();
 
 							String[] record = new String[GPKIPCI_ColumnCount];
 							record[GPKIPCI_GPKCode]         = DrugMappingStringUtilities.removeExtraSpaces(gpkIPCIFile.get(row, "GPKCode", true));

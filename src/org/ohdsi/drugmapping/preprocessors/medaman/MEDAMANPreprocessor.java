@@ -61,7 +61,7 @@ public class MEDAMANPreprocessor {
 				String drugCodeString = drugCode.toString();
 				drugCodeString = ("0000000" + drugCodeString).substring(drugCodeString.length());
 				//drugName = DrugMappingStringUtilities.convertToStandardCharacters(drugName);
-				ingredientCode = DrugMappingStringUtilities.convertToStandardCharacters(ingredientName == null ? "" : ingredientName).toUpperCase();
+				ingredientCode = DrugMappingStringUtilities.safeToUpperCase(DrugMappingStringUtilities.convertToStandardCharacters(ingredientName == null ? "" : ingredientName));
 				//ingredientName = DrugMappingStringUtilities.convertToStandardCharacters(ingredientName);
 				
 				
@@ -79,7 +79,7 @@ public class MEDAMANPreprocessor {
 						}
 						if ((amountNumeratorUnit != null) && (amountNumeratorTopUnit != null) && (amountNumeratorTopUnit.endsWith(amountNumeratorUnit))) {
 							amountNumeratorTopUnit = amountNumeratorTopUnit.substring(0, amountNumeratorUnit.length()).trim();
-							if (amountNumeratorTopUnit.toUpperCase().startsWith("E")) {
+							if (DrugMappingStringUtilities.safeToUpperCase(amountNumeratorTopUnit).startsWith("E")) {
 								String factorString = amountNumeratorTopUnit.substring(1).trim();
 								try {
 									int power = Integer.parseInt(factorString);

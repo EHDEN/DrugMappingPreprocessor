@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package org.ohdsi.utilities.files;
+package org.ohdsi.drugmapping.gui;
 
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;

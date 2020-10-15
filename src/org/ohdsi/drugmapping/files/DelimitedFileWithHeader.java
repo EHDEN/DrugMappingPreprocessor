@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DelimitedFileWithHeader implements Iterable<Row> {
+public class DelimitedFileWithHeader implements Iterable<DelimitedFileRow> {
 	private static char DEFAULT_DELIMITER      = ',';
 	private static char DEFAULT_TEXT_DELIMITER = '"';
 	
@@ -102,13 +102,13 @@ public class DelimitedFileWithHeader implements Iterable<Row> {
 
 	
 	@Override
-	public Iterator<Row> iterator() {
+	public Iterator<DelimitedFileRow> iterator() {
 		rowIterator = new RowIterator();
 		return rowIterator;
 	}
 
 	
-	public class RowIterator implements Iterator<Row> {
+	public class RowIterator implements Iterator<DelimitedFileRow> {
 
 		private Iterator<List<String>>	iterator;
 		private Map<String, Integer>	fieldName2ColumnIndex;
@@ -129,8 +129,8 @@ public class DelimitedFileWithHeader implements Iterable<Row> {
 
 		
 		@Override
-		public Row next() {
-			return new Row(iterator.next(), fieldName2ColumnIndex);
+		public DelimitedFileRow next() {
+			return new DelimitedFileRow(iterator.next(), fieldName2ColumnIndex);
 		}
 
 		

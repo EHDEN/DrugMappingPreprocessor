@@ -51,6 +51,11 @@ public class ExcelFile {
 	}
 	
 	
+	public Set<String> getSheetNames() {
+		return excelFile != null ? excelFile.getSheetNames() : null;
+	}
+	
+	
 	public boolean getSheet(String sheetName, boolean hasHeader) {
 		return excelFile != null ? excelFile.getSheet(sheetName, hasHeader) : false;
 	}
@@ -164,9 +169,12 @@ public class ExcelFile {
 			Map<String, Integer> columnNrs = sheetColumnNrs.get(sheetName);
 			if ((columnNrs != null) && (columnNrs.keySet().size() > 0)) {
 				columNames = new ArrayList<String>();
-				columNames.addAll(columnNrs.keySet());
 				for (String columnName : columnNrs.keySet()) {
-					columNames.set(columnNrs.get(columnName), columnName);
+					int columNr = columnNrs.get(columnName);
+					for (int extraNr = columNames.size(); extraNr <= columNr; extraNr++) {
+						columNames.add("");
+					}
+					columNames.set(columNr, columnName);
 				}
 			}
 			return columNames;
@@ -410,6 +418,10 @@ public class ExcelFile {
 					fileStream = new FileInputStream(file);
 					workBook = new XSSFWorkbook(fileStream);
 					sheetColumnNrs = new HashMap<String, Map<String, Integer>>();
+					for (int sheetNr = 0; sheetNr < workBook.getNumberOfSheets(); sheetNr++) {
+						String sheetName = workBook.getSheetName(sheetNr);
+						getSheet(sheetName, true);
+					}
 					result = true;
 				} 
 				catch (FileNotFoundException exception) {
@@ -438,10 +450,10 @@ public class ExcelFile {
 			
 			XSSFSheet sheet = workBook.getSheet(sheetName);
 			if (sheet != null) {
-				sheetMap.put(sheetName, sheet);
 				if (hasHeader) {
 					Row header = sheet.getRow(0);
 					if (header != null) {
+						sheetMap.put(sheetName, sheet);
 						Map<String, Integer> columnNrs = sheetColumnNrs.get(sheetName);
 						if (columnNrs == null) {
 							columnNrs = new HashMap<String, Integer>();
@@ -458,6 +470,7 @@ public class ExcelFile {
 					}
 				}
 				else {
+					sheetMap.put(sheetName, sheet);
 					currentRowNr = 0;
 					result = true;
 				}

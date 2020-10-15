@@ -43,9 +43,10 @@ import javax.swing.filechooser.FileFilter;
 import org.ohdsi.drugmapping.files.DelimitedFileWithHeader;
 import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
-import org.ohdsi.drugmapping.files.Row;
+import org.ohdsi.drugmapping.files.DelimitedFileRow;
 import org.ohdsi.drugmapping.gui.JTextFieldLimit;
 import org.ohdsi.drugmapping.gui.MainFrame;
+import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class DelimitedInputFileGUI extends InputFileGUI {
 	private static final long serialVersionUID = -8908651240263793215L;
@@ -59,7 +60,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	private String textQualifier = "\"";
 	private Map<String, String> columnMapping = new HashMap<String, String>();
 	
-	private Iterator<Row> fileIterator;
+	private Iterator<DelimitedFileRow> fileIterator;
 	
 	
 	public static char fieldDelimiter(String delimiterName) {
@@ -155,7 +156,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	public Row next() {
+	public DelimitedFileRow next() {
 		return fileIterator.next();
 	}
 	
@@ -165,7 +166,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	public String get(Row row, String fieldName, boolean required) {
+	public String get(DelimitedFileRow row, String fieldName, boolean required) {
 		String value = null;
 		String mappedFieldName = columnMapping.get(fieldName);	
 		if (required && (mappedFieldName == null)) {
@@ -174,7 +175,7 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		else {
 			value = row.get(mappedFieldName, required);
 		}
-		return value;
+		return DrugMappingStringUtilities.convertToANSI(value);
 	}
 	
 	

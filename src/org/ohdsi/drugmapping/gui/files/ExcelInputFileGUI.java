@@ -2,16 +2,20 @@ package org.ohdsi.drugmapping.gui.files;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -31,9 +35,12 @@ import org.ohdsi.drugmapping.files.ExcelFile;
 import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.gui.MainFrame;
+import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class ExcelInputFileGUI extends InputFileGUI {
 	private static final long serialVersionUID = -8908651240263793215L;
+	
+	private static int LABEL_SIZE = 50;
 	
 	private List<JComboBox<String>> comboBoxList;
 
@@ -135,12 +142,14 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	
 	
 	private String getMappedStringValue(Row row, String mappedFieldName) {
-		return excelFile.getStringValue(getSheetName(), row, mappedFieldName);
+		String value = excelFile.getStringValue(getSheetName(), row, mappedFieldName);
+		return value == null ? null : DrugMappingStringUtilities.convertToANSI(value);
 	}
 	
 	
 	public String getStringValue(Row row, Integer fieldNr) {
-		return excelFile.getStringValue(row, fieldNr);
+		String value = excelFile.getStringValue(row, fieldNr);
+		return value == null ? null : DrugMappingStringUtilities.convertToANSI(value);
 	}
 	
 	
@@ -335,15 +344,17 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		fileDialog.setLayout(new BorderLayout());
 		fileDialog.setModal(true);
 		fileDialog.setSize(500, 400);
+		fileDialog.setMinimumSize(new Dimension(500,  400));
 		MainFrame.setIcon(fileDialog);
 		fileDialog.setLocationRelativeTo(null);
 		fileDialog.setTitle("Input Sheet Definition");
 		fileDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		// File section
-		JPanel fileSectionPanel = new JPanel(new GridLayout(0, 1));
+		JPanel fileSectionPanel = new JPanel(new BorderLayout());
 		fileSectionPanel.setBorder(BorderFactory.createTitledBorder(getLabelText()));
 		
+		// File description
 		JPanel fileDescriptionPanel = new JPanel(new BorderLayout());
 		fileDescriptionPanel.setBorder(BorderFactory.createEmptyBorder());
 		JTextArea fileDescriptionField = new JTextArea();
@@ -359,29 +370,51 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		fileDescriptionField.setText(description);
 		fileDescriptionPanel.add(fileDescriptionField, BorderLayout.NORTH);
 		
+		// File selection
+		JPanel fileSelectionPanel = new JPanel();
+		fileSelectionPanel.setLayout(new GridLayout(0, 1));
+		
+		// File chooser
 		JPanel fileChooserPanel = new JPanel();
 		fileChooserPanel.setLayout(new BoxLayout(fileChooserPanel, BoxLayout.X_AXIS));
 		fileChooserPanel.setBorder(BorderFactory.createEmptyBorder());
+		
+		JPanel fileChooserLabelPanel = new JPanel(new BorderLayout());
+		fileChooserLabelPanel.setMinimumSize(new Dimension(LABEL_SIZE, fileChooserLabelPanel.getHeight()));
+		fileChooserLabelPanel.setPreferredSize(new Dimension(LABEL_SIZE, fileChooserLabelPanel.getHeight()));
+		fileChooserLabelPanel.add(new JLabel("File:"), BorderLayout.CENTER);
 		
 		JTextField fileField = new JTextField(excelInputFile.getFileName());
 		fileField.setEditable(false);
 		
 		JButton fileButton = new JButton("Browse");
 
-		fileChooserPanel.add(new JLabel("  File: "));
+		fileChooserPanel.add(fileChooserLabelPanel);
 		fileChooserPanel.add(fileField);
 		fileChooserPanel.add(new JLabel("  "));
 		fileChooserPanel.add(fileButton);
 		
-		// Sheet section
-		JPanel sheetSectionPanel = new JPanel(new BorderLayout());
-		sheetSectionPanel.add(new JLabel("Sheet:"), BorderLayout.WEST);
-		JComboBox<String> sheetComboBox = new JComboBox<String>(new String[]{});
-		sheetSectionPanel.add(sheetComboBox, BorderLayout.CENTER);
-
+		// Sheet chooser
+		JPanel sheetChooserPanel = new JPanel();
+		sheetChooserPanel.setLayout(new BoxLayout(sheetChooserPanel, BoxLayout.X_AXIS));
+		sheetChooserPanel.setBorder(BorderFactory.createEmptyBorder());
+		JPanel sheetChooserLabelPanel = new JPanel(new BorderLayout());
+		sheetChooserLabelPanel.setMinimumSize(new Dimension(LABEL_SIZE, sheetChooserLabelPanel.getHeight()));
+		sheetChooserLabelPanel.setPreferredSize(new Dimension(LABEL_SIZE, sheetChooserLabelPanel.getHeight()));
+		sheetChooserLabelPanel.add(new JLabel("Sheet:"), BorderLayout.CENTER);
+		
+		JComboBox<String> sheetChooserComboBox = new JComboBox<String>(new String[]{});
+		sheetChooserComboBox.setMinimumSize(new Dimension(450 - LABEL_SIZE, sheetChooserComboBox.getHeight()));
+		sheetChooserComboBox.setPreferredSize(new Dimension(450 - LABEL_SIZE, sheetChooserComboBox.getHeight()));
+		
+		sheetChooserPanel.add(sheetChooserLabelPanel);
+		sheetChooserPanel.add(sheetChooserComboBox);
+				
+		fileSelectionPanel.add(fileChooserPanel);
+		fileSelectionPanel.add(sheetChooserPanel);
+		
 		fileSectionPanel.add(fileDescriptionPanel, BorderLayout.NORTH);
-		fileDescriptionPanel.add(fileChooserPanel, BorderLayout.SOUTH);
-		fileSectionPanel.add(sheetSectionPanel, BorderLayout.SOUTH);
+		fileSectionPanel.add(fileSelectionPanel, BorderLayout.CENTER);
 				
 		// Mapping section
 		JPanel mappingSectionPanel = new JPanel(new BorderLayout());
@@ -438,6 +471,34 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		
 		JPanel buttonPanel = new JPanel(new FlowLayout());
 		JButton okButton = new JButton("    OK    ");
+		JButton cancelButton = new JButton("Cancel");
+		buttonPanel.add(okButton);
+		buttonPanel.add(cancelButton);
+		
+		buttonSectionPanel.add(buttonPanel, BorderLayout.WEST); 
+		
+		// Browse action
+		fileButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (selectFile(fileDialog, fileField)) {
+					//updateColumns(fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList);
+				}
+			}
+		});
+		
+		sheetChooserComboBox.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (!sheetChooserComboBox.getSelectedItem().toString().equals("")) {
+					updateColumns(sheetChooserComboBox.getSelectedItem().toString());
+				}
+			}
+		});
+
+		/* TODO
 		okButton.addActionListener(new ActionListener() {
 			
 			@Override
@@ -448,7 +509,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 				}				
 			}
 		});
-		JButton cancelButton = new JButton("Cancel");
+		
 		cancelButton.addActionListener(new ActionListener() {
 			
 			@Override
@@ -456,37 +517,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 				fileDialog.dispose();				
 			}
 		});
-		buttonPanel.add(okButton);
-		buttonPanel.add(cancelButton);
-		
-		buttonSectionPanel.add(buttonPanel, BorderLayout.WEST); 
-		
-		// Browse action
-		fileButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (selectFile(fileDialog, fileField)) {
-					updateColumns(fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList);
-				}
-			}
-		});
-		
-		sheetComboBox.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (!sheetComboBox.getSelectedItem().toString().equals("")) {
-					
-				}
-			}
-		});
-
+		*/
 		fileDialog.add(fileSectionPanel, BorderLayout.NORTH);
 		fileDialog.add(mappingSectionPanel, BorderLayout.CENTER);
 		fileDialog.add(buttonSectionPanel, BorderLayout.SOUTH);
 		
-		updateColumns(getFileName(), getSheetName(), comboBoxList);
+		updateSheetsAndColumns(getFileName(), sheetChooserComboBox);
 		
 		fileDialog.setVisible(true);
 	}
@@ -527,16 +563,40 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	private void updateSheets(String fileName, JComboBox<String> sheetCombobox) {
-		
+	private void updateSheetsAndColumns(String fileName, JComboBox<String> sheetCombobox) {
+		excelFile = new ExcelFile(fileName);
+		if (excelFile.open()) {
+			Set<String> sheetNames = excelFile.getSheetNames();
+			if (sheetNames != null) {
+				List<String> sortedSheetNames = new ArrayList<String>();
+				sortedSheetNames.addAll(sheetNames);
+				Collections.sort(sortedSheetNames);
+				String[] sortedSheetNamesArray = new String[sortedSheetNames.size()];
+				for (int sheetNr = 0; sheetNr < sortedSheetNames.size(); sheetNr++) {
+					sortedSheetNamesArray[sheetNr] = sortedSheetNames.get(sheetNr);
+				}
+				sheetCombobox.setModel(new DefaultComboBoxModel<String>(sortedSheetNamesArray));
+				sheetCombobox.setSelectedIndex(0);
+				updateColumns(sheetCombobox.getSelectedItem().toString());
+			}
+			else {
+				sheetCombobox.setModel(new DefaultComboBoxModel<String>(new String[] {}));
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(null, "Could not open the selected file", "Getting file information", JOptionPane.ERROR_MESSAGE);
+			excelFile = null;
+		}
 	}
 	
 	
-	private void updateColumns(String fileName, String sheetName, List<JComboBox<String>> comboBoxList) {
-		if ((fileName != null) && (!fileName.equals(""))) {
-			/* TODO
-			String fileHeader = getFileHeader(fileName);
-			String[] columns = fileHeader.split(translateDelimiter(fieldDelimiter));
+	private void updateColumns(String sheetName) {
+		if (excelFile != null) {
+			List<String> columnList = excelFile.getColumnNames(sheetName);
+			String[] columns = new String[columnList.size()];
+			for (int columnNr = 0; columnNr < columnList.size(); columnNr++) {
+				columns[columnNr] = columnList.get(columnNr);
+			}
 			int columnNr = 0;
 			for (JComboBox<String> comboBox : comboBoxList) {
 				String columnName = getFileDefinition().getColumns()[columnNr].getColumnName();
@@ -559,29 +619,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 				}
 				columnNr++;
 			}
-			*/
 		}
-	}
-	
-	
-	private String getFileHeader(String fileName) {
-		String header = "";
-		/* TODO
-		try {
-			FileInputStream inputstream = new FileInputStream(fileName);
-			BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputstream, CHAR_SET));
-			header = bufferedReader.readLine();
-			bufferedReader.close();
-			inputstream.close();
-		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(null, "File not found!", "Error", JOptionPane.ERROR_MESSAGE);
-		} catch (UnsupportedEncodingException e) {
-			JOptionPane.showMessageDialog(null, "Unsupported encoding!", "Error", JOptionPane.ERROR_MESSAGE);
-		} catch (IOException e) {
-			JOptionPane.showMessageDialog(null, "Cannot read  file!", "Error", JOptionPane.ERROR_MESSAGE);
-		}
-		*/
-		return header;
 	}
 	
 	
@@ -637,12 +675,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 
 	        @Override
 	        public boolean accept(File f) {
-	            return f.getName().endsWith(".csv");
+	            return f.getName().endsWith(".xlsx");
 	        }
 
 	        @Override
 	        public String getDescription() {
-	            return "Comma Separated File";
+	            return "Excel Workbook";
 	        }
 
 	    });
@@ -650,12 +688,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 
 	        @Override
 	        public boolean accept(File f) {
-	            return f.getName().endsWith(".tsv");
+	            return f.getName().endsWith(".xls");
 	        }
 
 	        @Override
 	        public String getDescription() {
-	            return "Tab Separated File";
+	            return "Excel 97-2003 Workbook";
 	        }
 
 	    });

@@ -222,8 +222,8 @@ public abstract class InputFileGUI extends JPanel {
 		String result = null;
 		
 		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setCurrentDirectory(new File(currentDirectory));
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		fileChooser.setCurrentDirectory(new File(currentDirectory));
 		if (fileFilters != null) {
 			for (int fileFilterNr = 0; fileFilterNr < fileFilters.size(); fileFilterNr++) {
 				if (fileFilterNr == 0) {

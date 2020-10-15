@@ -21,7 +21,6 @@ import java.io.OutputStream;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 
-import org.ohdsi.utilities.files.WriteTextFile;
 
 public class Console extends OutputStream {
 	

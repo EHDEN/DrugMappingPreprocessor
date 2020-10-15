@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.ohdsi.drugmapping.files.Row;
+import org.ohdsi.drugmapping.files.DelimitedFileRow;
 import org.ohdsi.drugmapping.files.XMLFile.XMLNode;
 import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
 import org.ohdsi.drugmapping.gui.files.Folder;
@@ -88,7 +88,7 @@ public class AEMPSPreprocessor {
 		Integer countsCount = 0;
 		if (codeCountsFile.openFileForReading()) {
 			while (codeCountsFile.hasNext()) {
-				Row row = codeCountsFile.next();
+				DelimitedFileRow row = codeCountsFile.next();
 				String drugNr = codeCountsFile.get(row, "SourceCode", true).trim();
 				String countString = codeCountsFile.get(row, "SourceCount", false).trim();
 
