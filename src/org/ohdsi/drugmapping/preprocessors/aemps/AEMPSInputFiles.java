@@ -1,4 +1,4 @@
-package org.ohdsi.drugmapping.aemps;
+package org.ohdsi.drugmapping.preprocessors.aemps;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,14 +8,14 @@ import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.files.InputFileDefinition;
 
 
-public class AEMPSPreprocessorInputFiles extends InputFileDefinition {
+public class AEMPSInputFiles extends InputFileDefinition {
 
 	
-	public AEMPSPreprocessorInputFiles() {
+	public AEMPSInputFiles() {
 		inputFiles = new ArrayList<FileDefinition>(
 				Arrays.asList(
 						new FileDefinition(
-								"Drugs File",
+								"AEMPS Drugs File",
 								new String[] {
 										"This file should contain the drugs and their composition."
 						  		},
@@ -24,7 +24,7 @@ public class AEMPSPreprocessorInputFiles extends InputFileDefinition {
 								true
 						),
 						new FileDefinition(
-								"Active Ingredients File",
+								"AEMPS Active Ingredients File",
 								new String[] {
 										"This file should contain the active ingredients."
 						  		},
@@ -33,7 +33,7 @@ public class AEMPSPreprocessorInputFiles extends InputFileDefinition {
 								true
 						),
 						new FileDefinition(
-								"Dose Forms File",
+								"AEMPS Dose Forms File",
 								new String[] {
 										"This file should contain the dose forms."
 						  		},
@@ -42,7 +42,7 @@ public class AEMPSPreprocessorInputFiles extends InputFileDefinition {
 								true
 						),
 						new FileDefinition(
-								"Code Counts File",
+								"AEMPS Code Counts File",
 								new String[] {
 										"This file should contain the use counts of the drugs in the source database."
 						  		},

@@ -8,11 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -187,30 +183,11 @@ public abstract class InputFileGUI extends JPanel {
 	}
 	
 	
-	public String getFieldDelimiter() {
-		return "";
-	}
-	
-	
-	public String getTextQualifier() {
-		return "";
-	}
-	
-	
-	public List<String> getColumns() {
-		return new ArrayList<String>();
-	}
-	
-	
-	public Map<String, String> getColumnMapping() {
-		return new HashMap<String, String>();
-	}
-	
-	
 	public boolean selectFile(Component parent, JTextField fileField) {
 		boolean result = false;
 		String fileName = selectFile(parent, getFileFilters());
 		if (fileName != null) {
+			setFileName(fileName);
 			fileField.setText(fileName);
 			result = true;
 		}
@@ -243,39 +220,10 @@ public abstract class InputFileGUI extends JPanel {
 	}
 	
 	
-	public List<String> getSettings() {
-		List<String> settings = new ArrayList<String>();
-
-		settings.add("#");
-		settings.add("# " + getLabelText());
-		settings.add("#");
-		settings.add("");
-		settings.add(getLabelText() + ".filename=" + getFileName());
-		settings.add(getLabelText() + ".selected=" + (isSelected() ? "Yes" : "No"));
-		
-		return settings;
-	}
+	abstract public List<String> getSettings();
 	
 	
-	public void putSettings(List<String> settings) {
-		for (String setting : settings) {
-			if ((!setting.trim().equals("")) && (!setting.substring(0, 1).equals("#"))) {
-				int equalSignIndex = setting.indexOf("=");
-				String settingPath = setting.substring(0, equalSignIndex);
-				String value = setting.substring(equalSignIndex + 1).trim();
-				String[] settingPathSplit = settingPath.split("\\.");
-				if ((settingPathSplit.length > 0) && (settingPathSplit[0].equals(getLabelText()))) {
-					if (settingPathSplit.length == 2) {
-						if (settingPathSplit[1].equals("filename")) setFileName(value);
-						else if (settingPathSplit[1].equals("selected")) setSelected(value.toUpperCase().equals("YES"));
-						else {
-							// Unknown setting
-						}
-					}
-				}
-			}
-		}
-	}
+	abstract public void putSettings(List<String> settings);
 	
 	
 	abstract void defineFile(InputFileGUI inputFile);
@@ -284,9 +232,12 @@ public abstract class InputFileGUI extends JPanel {
 	abstract List<FileFilter> getFileFilters();
 	
 	
-	abstract boolean openFileForReading();
+	abstract public boolean openFileForReading();
 	
 	
-	abstract boolean openFileForReading(boolean suppressError);
+	abstract public boolean openFileForReading(boolean suppressError);
+	
+	
+	abstract public void logFileSettings();
 
 }

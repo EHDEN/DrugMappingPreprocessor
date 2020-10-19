@@ -114,6 +114,7 @@ public class DrugMappingPreprocessor {
 		}
 		
 		public void run() {
+			mainFrame.getCurrentPreprocessor().setIsPreprocessing(true);
 			for (JComponent component : componentsToDisableWhenRunning)
 				component.setEnabled(false);
 			
@@ -124,6 +125,7 @@ public class DrugMappingPreprocessor {
 			
 			for (JComponent component : componentsToDisableWhenRunning)
 				component.setEnabled(true);
+			mainFrame.getCurrentPreprocessor().setIsPreprocessing(false);
 		}
 		
 	}

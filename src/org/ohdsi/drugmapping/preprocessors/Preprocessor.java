@@ -13,8 +13,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -34,8 +32,9 @@ import org.ohdsi.drugmapping.gui.ObjectExchange;
 import org.ohdsi.drugmapping.gui.Setting;
 import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.gui.files.InputFileGUI;
+import org.ohdsi.drugmapping.source.Source;
 
-public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
+abstract public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	private static final long serialVersionUID = -2611669075696826114L;
 	
 	protected String preprocessorName = null;
@@ -48,6 +47,10 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	protected Folder outputFolder = null; 
 	protected GeneralSettings settings = null;
 	protected JButton startButton = null;
+	protected boolean isPreprocessing = false;
+
+	protected Source source = new Source();
+	
 
 	public Preprocessor(DrugMappingPreprocessor drugMapping, MainFrame mainFrame, String preprocessorName, InputFileDefinition inputFileDefinition) {
 		super();
@@ -158,6 +161,17 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 				setting.initialize();
 			}
 		}
+		isPreprocessing = false;
+	}
+	
+	
+	public boolean isPreprocessing() {
+		return isPreprocessing;
+	}
+	
+	
+	public void setIsPreprocessing(boolean isPreprocessing) {
+		this.isPreprocessing = isPreprocessing;
 	}
 	
 	
@@ -167,6 +181,7 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	
 	
 	public boolean hasFileSettings() {
+		// To be overruled at the subclass
 		return true;
 	}
 
@@ -201,6 +216,12 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 			settings.add("");
 		}
 		saveSettingsToFile(settings);
+	}
+
+	
+	public void loadGeneralSettingsFile() {
+		List<String> generalSettings = readSettingsFromFile();
+		loadGeneralSettingsFile(generalSettings);
 	}
 	
 	
@@ -271,33 +292,6 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	}
 	
 	
-	public boolean hasGeneralSettings() {
-		// To be overruled at the subclass
-		return false;
-	}
-
-	
-	public void loadGeneralSettingsFile(List<String> fileSettings) {
-		// To be overruled at the subclass
-	}
-
-	
-	public void saveGeneralSettingsFile() {
-		// To be overruled at the subclass
-	}
-	
-	
-	public String getOutputFileName() {
-		// To be overruled at the subclass
-		return null;
-	}
-	
-
-	public void run(String outputFileName) {
-		// To be overruled at the subclass
-	}
-	
-	
 	public String getFile(FileNameExtensionFilter extensionsFilter, boolean fileShouldExist) {
 		String fileName = null;
 		JFileChooser fileChooser = new JFileChooser();
@@ -338,28 +332,6 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	}
 	
 	
-	public void logFileSettings(String fileId, InputFileGUI file) {
-		if (file.getFileName() != null) {
-			System.out.println("Input File: " + fileId);
-			System.out.println("  Filename: " + file.getFileName());
-			System.out.println("  File type: " + FileDefinition.getFileTypeName(file.getFileType()));
-			if (file.getFileType() == FileDefinition.DELIMITED_FILE) {
-				System.out.println("  Field delimiter: '" + file.getFieldDelimiter() + "'");
-				System.out.println("  Text qualifier: '" + file.getTextQualifier() + "'");
-			}
-			if ((file.getFileType() == FileDefinition.DELIMITED_FILE) || (file.getFileType() == FileDefinition.EXCEL_FILE)) {
-				System.out.println("  Fields:");
-				List<String> columns = file.getColumns();
-				Map<String, String> columnMapping = file.getColumnMapping();
-				for (String column : columns) {
-					System.out.println("    " + column + " -> " + columnMapping.get(column));
-				}
-			}
-			System.out.println();
-		}
-	}
-	
-	
 	public void logFolderSettings(Folder folder) {
 		if (folder.getFolderName() != null) {
 			System.out.println(folder.getName() + ": " + folder.getFolderName());
@@ -380,6 +352,58 @@ public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	public String getPreprocessorName() {
 		return preprocessorName;
 	}
+	
+
+	public void run(String outputFileName) {
+		for (InputFileGUI inputFile : inputFiles) {
+			inputFile.logFileSettings();
+			System.out.println("Output file: " + outputFileName);
+			System.out.println();
+		}
+		
+		System.out.println("Preprocessing " + getPreprocessorName() + " Drugs");
+
+		System.out.println("  Loading data");
+		boolean getDataResult = getData();
+		System.out.println("  Done");
+		
+		if (getDataResult) {
+			writeInputFile(outputFileName);
+		}
+		
+		System.out.println("Finished");
+		System.out.println();
+	}
+	
+	
+	protected boolean writeInputFile(String outputFileName) {
+		boolean result = true;
+		
+		System.out.println("  Writing drug mapping input file \"" + outputFileName + "\"");
+		
+		if (!source.save(outputFileName, true, true)) {
+			System.out.println("ERROR: Cannot write input file \"" + outputFileName + "\"!");
+		}
+		
+		System.out.println("  Done");
+		
+		return result;
+	}
+	
+	
+	abstract public boolean hasGeneralSettings();
+
+	
+	abstract public void loadGeneralSettingsFile(List<String> fileSettings);
+
+	
+	abstract public void saveGeneralSettingsFile();
+	
+	
+	abstract public String getOutputFileName();
+	
+	
+	abstract public boolean getData();
 
 
 	@Override

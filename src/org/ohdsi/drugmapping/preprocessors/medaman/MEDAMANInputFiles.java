@@ -7,14 +7,14 @@ import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.files.InputFileDefinition;
 
-public class MEDAMANPreprocessorInputFiles extends InputFileDefinition {
+public class MEDAMANInputFiles extends InputFileDefinition {
 
 	
-	public MEDAMANPreprocessorInputFiles() {
+	public MEDAMANInputFiles() {
 		inputFiles = new ArrayList<FileDefinition>(
 				Arrays.asList(
 						new FileDefinition(
-								"MEDAMAN Drug File",
+								"MEDAMAN Drugs File",
 								new String[] {
 										"This file should contain MEDAMAN Drug definitions."
 						  		},
@@ -41,7 +41,7 @@ public class MEDAMANPreprocessorInputFiles extends InputFileDefinition {
 										new FileColumnDefinition(
 												"IngredientCode",
 												new String[] {
-														"This is code of the ingredient."
+														"This is the code of the ingredient."
 												}
 										),
 										new FileColumnDefinition(
@@ -85,13 +85,13 @@ public class MEDAMANPreprocessorInputFiles extends InputFileDefinition {
 												new String[] {
 														"This is the unit of the maximum amount numerator of the ingredient."
 												}
-										),
+										)
 								}
 						),
 						new FileDefinition(
 								"MEDAMAN ATC File",
 								new String[] {
-										"This file should contain the ATC codes of the drugs."
+										"This file should contain the MEDAMAN ATC codes of the drugs."
 						  		},
 								FileDefinition.EXCEL_FILE,
 								new FileColumnDefinition[] {

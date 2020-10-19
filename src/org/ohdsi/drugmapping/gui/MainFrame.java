@@ -9,10 +9,7 @@ import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -20,9 +17,13 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
+import org.ohdsi.drugmapping.preprocessors.aemps.AEMPS;
 import org.ohdsi.drugmapping.preprocessors.medaman.MEDAMAN;
 import org.ohdsi.drugmapping.preprocessors.zindex.ZIndex;
 
@@ -48,10 +49,10 @@ public class MainFrame {
 	public static int SUPPRESS_WARNINGS;
 	
 	private JFrame frame;
-	JMenuItem loadFileSettingsMenuItem;
-	JMenuItem saveFileSettingsMenuItem;
-	JMenuItem loadGeneralSettingsMenuItem ;
-	JMenuItem saveGeneralSettingsMenuItem;
+	private JMenuItem loadFileSettingsMenuItem;
+	private JMenuItem saveFileSettingsMenuItem;
+	private JMenuItem loadGeneralSettingsMenuItem ;
+	private JMenuItem saveGeneralSettingsMenuItem;
 	private JTabbedPane preprocessorsPane;
 
 	List<Preprocessor> preprocessors = new ArrayList<Preprocessor>();
@@ -82,6 +83,7 @@ public class MainFrame {
 		preprocessors = new ArrayList<Preprocessor>();
 		preprocessors.add(new ZIndex(drugMappingPreprocessor, this));
 		preprocessors.add(new MEDAMAN(drugMappingPreprocessor, this));
+		preprocessors.add(new AEMPS(drugMappingPreprocessor, this));
 		
 		createInterface();
 	}
@@ -126,6 +128,14 @@ public class MainFrame {
 		preprocessorsPane = new JTabbedPane();
 		DrugMappingPreprocessor.disableWhenRunning(preprocessorsPane);
 		
+		preprocessorsPane.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				enableDisableMenus();
+			}
+		});
+		
 		Collections.sort(preprocessors);
 		for (Preprocessor preprocessor : preprocessors) {
 			preprocessorsPane.addTab(preprocessor.getPreprocessorName(), preprocessor);
@@ -146,7 +156,7 @@ public class MainFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-// TODO				getCurrentTab().loadFileSettingsFile();
+				getCurrentPreprocessor().loadFileSettingsFile();
 			}
 		});
 		file.add(loadFileSettingsMenuItem);
@@ -168,7 +178,7 @@ public class MainFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-// TODO				getCurrentTab().loadGeneralSettingsFile();
+				getCurrentPreprocessor().loadGeneralSettingsFile();
 			}
 		});
 		file.add(loadGeneralSettingsMenuItem);
@@ -205,17 +215,13 @@ public class MainFrame {
 	
 	private String isBusy() {
 		String busy = null;
-		/* TODO
-		if (GenericMapping.isMapping)              busy = ((busy == null) ? "" : "\r\n") + "Mapping in progress!";
-		if (GenericMapping.isSavingDrugMapping)    busy = ((busy == null) ? "" : "\r\n") + "Saving Mapping in progress!";
-		if (GenericMapping.isSavingDrugMappingLog) busy = ((busy == null) ? "" : "\r\n") + "Saving Drug Mapping Log in progress!";
-		*/
+		if (getCurrentPreprocessor().isPreprocessing()) busy = ((busy == null) ? "" : "\r\n") + "Preprocessing " + getCurrentPreprocessor().getName() + " in progress!";
 		return busy;
 	}
 	
 	
-	private void enableDisableMenus(String preprocessorName) {
-		Preprocessor preprocessor = getPreprocessor(preprocessorName);
+	private void enableDisableMenus() {
+		Preprocessor preprocessor = getCurrentPreprocessor();
 		if (preprocessor != null) {
 			loadFileSettingsMenuItem.setEnabled(preprocessor.hasFileSettings());
 			saveFileSettingsMenuItem.setEnabled(preprocessor.hasFileSettings());
@@ -254,7 +260,7 @@ public class MainFrame {
 		}
 		if (index != -1) {
 			preprocessorsPane.setSelectedIndex(index);
-			enableDisableMenus(preprocessorName);
+			enableDisableMenus();
 		}
 		
 		return (index != -1);

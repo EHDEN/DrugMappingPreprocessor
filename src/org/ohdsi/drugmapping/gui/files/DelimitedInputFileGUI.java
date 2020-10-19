@@ -515,7 +515,8 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		return header;
 	}
 	
-	
+
+	@Override
 	public List<String> getSettings() {
 		List<String> settings = new ArrayList<String>();
 
@@ -536,7 +537,8 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		return settings;
 	}
 	
-	
+
+	@Override
 	public void putSettings(List<String> settings) {
 		for (String setting : settings) {
 			if ((!setting.trim().equals("")) && (!setting.substring(0, 1).equals("#"))) {
@@ -633,6 +635,25 @@ public class DelimitedInputFileGUI extends InputFileGUI {
 		}
 		
 		return result;
+	}
+
+
+	@Override
+	public void logFileSettings() {
+		if (getFileName() != null) {
+			System.out.println("Input File: " + getFileDefinition().getFileName());
+			System.out.println("  Filename: " + getFileName());
+			System.out.println("  File type: " + FileDefinition.getFileTypeName(getFileType()));
+			System.out.println("  Field delimiter: '" + getFieldDelimiter() + "'");
+			System.out.println("  Text qualifier: '" + getTextQualifier() + "'");
+			System.out.println("  Fields:");
+			List<String> columns = getColumns();
+			Map<String, String> columnMapping = getColumnMapping();
+			for (String column : columns) {
+				System.out.println("    " + column + " -> " + columnMapping.get(column));
+			}
+			System.out.println();
+		}
 	}
 
 }

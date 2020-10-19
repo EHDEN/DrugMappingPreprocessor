@@ -74,7 +74,7 @@ public class SourceIngredient {
 		record += "," + DrugMappingStringUtilities.escapeFieldValue(nameEnglish);
 		record += "," + (dosage == null ? "" : dosage);
 		record += "," + dosageUnit;
-		record += "," + casNumber;
+		record += "," + (casNumber == null ? "" : casNumber);
 		
 		return record;
 	}

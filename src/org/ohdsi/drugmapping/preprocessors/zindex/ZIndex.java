@@ -21,11 +21,11 @@ public class ZIndex extends Preprocessor {
 	
 	
 	public void run(String outputFileName) {
-		logFileSettings("ZIndex GPK File", getInputFile("ZIndex GPK File"));
-		logFileSettings("ZIndex GSK File", getInputFile("ZIndex GSK File"));
-		logFileSettings("ZIndex GNK File", getInputFile("ZIndex GNK File"));
-		logFileSettings("ZIndex GPK Statistics File", getInputFile("ZIndex GPK Statistics File"));
-		logFileSettings("ZIndex GPK IPCI Compositions File", getInputFile("ZIndex GPK IPCI Compositions File"));
+		if (getInputFile("ZIndex GPK File") != null) getInputFile("ZIndex GPK File").logFileSettings();
+		if (getInputFile("ZIndex GSK File") != null) getInputFile("ZIndex GSK File").logFileSettings();
+		if (getInputFile("ZIndex GNK File") != null) getInputFile("ZIndex GNK File").logFileSettings();
+		if (getInputFile("ZIndex GPK Statistics File") != null) getInputFile("ZIndex GPK Statistics File").logFileSettings();
+		if (getInputFile("ZIndex GPK IPCI Compositions File") != null) getInputFile("ZIndex GPK IPCI Compositions File").logFileSettings();
 		new ZIndexPreprocessor(
 				(DelimitedInputFileGUI) getInputFile("ZIndex GPK File"), 
 				(DelimitedInputFileGUI) getInputFile("ZIndex GSK File"), 

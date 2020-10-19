@@ -483,7 +483,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (selectFile(fileDialog, fileField)) {
-					//updateColumns(fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList);
+					updateSheetsAndColumns(fileField.getText(), sheetChooserComboBox, null);
 				}
 			}
 		});
@@ -498,13 +498,11 @@ public class ExcelInputFileGUI extends InputFileGUI {
 			}
 		});
 
-		/* TODO
 		okButton.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//TODO
-				if (saveFileSettings(excelInputFile, fileField.getText(), sheetComboBox.getSelectedItem().toString(), comboBoxList)) {
+				if (saveFileSettings(excelInputFile, fileField.getText(), sheetChooserComboBox.getSelectedItem().toString(), comboBoxList)) {
 					fileDialog.dispose();
 				}				
 			}
@@ -517,12 +515,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 				fileDialog.dispose();				
 			}
 		});
-		*/
+
 		fileDialog.add(fileSectionPanel, BorderLayout.NORTH);
 		fileDialog.add(mappingSectionPanel, BorderLayout.CENTER);
 		fileDialog.add(buttonSectionPanel, BorderLayout.SOUTH);
 		
-		updateSheetsAndColumns(getFileName(), sheetChooserComboBox);
+		updateSheetsAndColumns(getFileName(), sheetChooserComboBox, getSheetName());
 		
 		fileDialog.setVisible(true);
 	}
@@ -543,6 +541,7 @@ public class ExcelInputFileGUI extends InputFileGUI {
 				columnMappingComplete
 			) {
 			inputFile.setFileName(fileName);
+			inputFile.setSheetName(sheetName);
 			Map<String, String> columnMapping = new HashMap<String, String>();
 			int columnNr = 0;
 			for (String column : inputFile.getColumns()) {
@@ -563,29 +562,31 @@ public class ExcelInputFileGUI extends InputFileGUI {
 	}
 	
 	
-	private void updateSheetsAndColumns(String fileName, JComboBox<String> sheetCombobox) {
-		excelFile = new ExcelFile(fileName);
-		if (excelFile.open()) {
-			Set<String> sheetNames = excelFile.getSheetNames();
-			if (sheetNames != null) {
-				List<String> sortedSheetNames = new ArrayList<String>();
-				sortedSheetNames.addAll(sheetNames);
-				Collections.sort(sortedSheetNames);
-				String[] sortedSheetNamesArray = new String[sortedSheetNames.size()];
-				for (int sheetNr = 0; sheetNr < sortedSheetNames.size(); sheetNr++) {
-					sortedSheetNamesArray[sheetNr] = sortedSheetNames.get(sheetNr);
+	private void updateSheetsAndColumns(String fileName, JComboBox<String> sheetCombobox, String currentSheetName) {
+		if (fileName != null) {
+			excelFile = new ExcelFile(fileName);
+			if (excelFile.open()) {
+				Set<String> sheetNames = excelFile.getSheetNames();
+				if (sheetNames != null) {
+					List<String> sortedSheetNames = new ArrayList<String>();
+					sortedSheetNames.addAll(sheetNames);
+					Collections.sort(sortedSheetNames);
+					String[] sortedSheetNamesArray = new String[sortedSheetNames.size()];
+					for (int sheetNr = 0; sheetNr < sortedSheetNames.size(); sheetNr++) {
+						sortedSheetNamesArray[sheetNr] = sortedSheetNames.get(sheetNr);
+					}
+					sheetCombobox.setModel(new DefaultComboBoxModel<String>(sortedSheetNamesArray));
+					sheetCombobox.setSelectedIndex(currentSheetName == null ? 0 : sortedSheetNames.indexOf(currentSheetName));
+					updateColumns(sheetCombobox.getSelectedItem().toString());
 				}
-				sheetCombobox.setModel(new DefaultComboBoxModel<String>(sortedSheetNamesArray));
-				sheetCombobox.setSelectedIndex(0);
-				updateColumns(sheetCombobox.getSelectedItem().toString());
+				else {
+					sheetCombobox.setModel(new DefaultComboBoxModel<String>(new String[] {}));
+				}
 			}
 			else {
-				sheetCombobox.setModel(new DefaultComboBoxModel<String>(new String[] {}));
+				JOptionPane.showMessageDialog(null, "Could not open the selected file", "Getting file information", JOptionPane.ERROR_MESSAGE);
+				excelFile = null;
 			}
-		}
-		else {
-			JOptionPane.showMessageDialog(null, "Could not open the selected file", "Getting file information", JOptionPane.ERROR_MESSAGE);
-			excelFile = null;
 		}
 	}
 	
@@ -622,7 +623,8 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		}
 	}
 	
-	
+
+	@Override
 	public List<String> getSettings() {
 		List<String> settings = new ArrayList<String>();
 
@@ -640,7 +642,8 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		return settings;
 	}
 	
-	
+
+	@Override
 	public void putSettings(List<String> settings) {
 		for (String setting : settings) {
 			if ((!setting.trim().equals("")) && (!setting.substring(0, 1).equals("#"))) {
@@ -739,6 +742,24 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		}
 		
 		return result;
+	}
+
+
+	@Override
+	public void logFileSettings() {
+		if (getFileName() != null) {
+			System.out.println("Input File: " + getFileDefinition().getFileName());
+			System.out.println("  Filename: " + getFileName());
+			System.out.println("  File type: " + FileDefinition.getFileTypeName(getFileType()));
+			System.out.println("  Sheet name: '" + getSheetName() + "'");
+			System.out.println("  Fields:");
+			List<String> columns = getColumns();
+			Map<String, String> columnMapping = getColumnMapping();
+			for (String column : columns) {
+				System.out.println("    " + column + " -> " + columnMapping.get(column));
+			}
+			System.out.println();
+		}
 	}
 	
 	
