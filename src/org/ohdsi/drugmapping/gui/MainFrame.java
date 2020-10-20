@@ -24,6 +24,7 @@ import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.preprocessors.aemps.AEMPS;
+import org.ohdsi.drugmapping.preprocessors.laegemiddelstyrelsen.Laegemiddelstyrelsen;
 import org.ohdsi.drugmapping.preprocessors.medaman.MEDAMAN;
 import org.ohdsi.drugmapping.preprocessors.zindex.ZIndex;
 
@@ -84,6 +85,7 @@ public class MainFrame {
 		preprocessors.add(new ZIndex(drugMappingPreprocessor, this));
 		preprocessors.add(new MEDAMAN(drugMappingPreprocessor, this));
 		preprocessors.add(new AEMPS(drugMappingPreprocessor, this));
+		preprocessors.add(new Laegemiddelstyrelsen(drugMappingPreprocessor, this));
 		
 		createInterface();
 	}

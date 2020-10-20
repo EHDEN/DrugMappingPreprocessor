@@ -7,10 +7,10 @@ import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.files.InputFileDefinition;
 
-public class LaegemiddelstyrelsenPreprocessorInputFiles extends InputFileDefinition {
+public class LaegemiddelstyrelsenInputFiles extends InputFileDefinition {
 
 	
-	public LaegemiddelstyrelsenPreprocessorInputFiles() {
+	public LaegemiddelstyrelsenInputFiles() {
 		inputFiles = new ArrayList<FileDefinition>(
 				Arrays.asList(
 						new FileDefinition(
@@ -59,61 +59,13 @@ public class LaegemiddelstyrelsenPreprocessorInputFiles extends InputFileDefinit
 										new FileColumnDefinition(
 												"DrugUnit",
 												new String[] {
-														"This is the unit of the maximum amount numerator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"IngredientCode",
-												new String[] {
-														"This is code of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"IngredientName",
-												new String[] {
-														"This is the name of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountNumerator",
-												new String[] {
-														"This is the amount numerator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountNumeratorUnit",
-												new String[] {
-														"This is the unit of the amount numerator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountDenominator",
-												new String[] {
-														"This is the amount denominator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountDenominatorUnit",
-												new String[] {
-														"This is the unit of the amount denominator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountNumeratorTop",
-												new String[] {
-														"This is the maximum amount numerator of the ingredient."
-												}
-										),
-										new FileColumnDefinition(
-												"AmountNumeratorTopUnit",
-												new String[] {
-														"This is the unit of the maximum amount numerator of the ingredient."
+														"This is the unit of the drug."
 												}
 										)
 								}
 						),
 						new FileDefinition(
-								"Laegemiddelstyrelsen Active Ingredients File",
+								"Laegemiddelstyrelsen Active Compounds File",
 								new String[] {
 										"This file should contain the active drugs of Laegemiddelstyrelsen."
 						  		},
@@ -152,7 +104,7 @@ public class LaegemiddelstyrelsenPreprocessorInputFiles extends InputFileDefinit
 								}
 						),
 						new FileDefinition(
-								"Laegemiddelstyrelsen Retired Ingredients File",
+								"Laegemiddelstyrelsen Retired Compounds File",
 								new String[] {
 										"This file should contain the retired drugs of Laegemiddelstyrelsen."
 						  		},

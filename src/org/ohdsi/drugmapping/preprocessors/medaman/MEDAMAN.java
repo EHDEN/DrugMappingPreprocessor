@@ -180,7 +180,7 @@ public class MEDAMAN extends Preprocessor {
 	private boolean getCountData(ExcelInputFileGUI countsFile) {
 		boolean result = true;
 
-		Integer atcCount = 0;
+		Integer countCount = 0;
 		if (countsFile.openFileForReading(true)) {
 			Integer drugCodeColumnNr = countsFile.getColumnNr("DrugCode");
 			if (drugCodeColumnNr != null) {
@@ -200,12 +200,12 @@ public class MEDAMAN extends Preprocessor {
 						SourceDrug sourceDrug = source.getSourceDrug(drugCodeString);
 						if (sourceDrug != null) {
 							sourceDrug.setCount(count);
-							atcCount++;
+							countCount++;
 						}
 					}
 				}
 
-				System.out.println("      Found " + atcCount + " atc codes");
+				System.out.println("      Found " + countCount + " drug use counts.");
 				System.out.println("    Done");
 			}
 			else {

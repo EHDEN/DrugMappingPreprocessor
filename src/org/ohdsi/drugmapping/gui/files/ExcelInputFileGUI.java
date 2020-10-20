@@ -258,10 +258,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Integer result = null;
 		
 		String resultString = get(row, fieldName);
-		try {
-			result = (int) Math.round(Double.parseDouble(resultString));
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = (int) Math.round(Double.parseDouble(resultString));
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
@@ -272,10 +274,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Integer result = null;
 		
 		String resultString = get(row, fieldNr);
-		try {
-			result = (int) Math.round(Double.parseDouble(resultString));
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = (int) Math.round(Double.parseDouble(resultString));
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
@@ -286,10 +290,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Long result = null;
 		
 		String resultString = get(row, fieldName);
-		try {
-			result = (long) Math.round(Double.parseDouble(resultString));
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = (long) Math.round(Double.parseDouble(resultString));
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
@@ -300,10 +306,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Long result = null;
 		
 		String resultString = get(row, fieldNr);
-		try {
-			result = (long) Math.round(Double.parseDouble(resultString));
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = (long) Math.round(Double.parseDouble(resultString));
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
@@ -314,10 +322,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Double result = null;
 		
 		String resultString = get(row, fieldName);
-		try {
-			result = Double.parseDouble(resultString);
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = Double.parseDouble(resultString);
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
@@ -328,10 +338,12 @@ public class ExcelInputFileGUI extends InputFileGUI {
 		Double result = null;
 		
 		String resultString = get(row, fieldNr);
-		try {
-			result = Double.parseDouble(resultString);
-		} catch (NumberFormatException e) {
-			result = null;
+		if (resultString != null) {
+			try {
+				result = Double.parseDouble(resultString);
+			} catch (NumberFormatException e) {
+				result = null;
+			}
 		}
 		
 		return result;
