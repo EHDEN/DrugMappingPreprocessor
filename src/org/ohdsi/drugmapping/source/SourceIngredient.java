@@ -63,6 +63,11 @@ public class SourceIngredient {
 	}
 	
 	
+	public String getDosageUnit() {
+		return dosageUnit;
+	}
+	
+	
 	public void setCASNumber(String casNumber) {
 		this.casNumber = casNumber;
 	}

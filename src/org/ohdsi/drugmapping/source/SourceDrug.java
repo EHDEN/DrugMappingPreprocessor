@@ -67,6 +67,11 @@ public class SourceDrug {
     }
     
     
+    public List<SourceIngredient> getIngredients() {
+    	return ingredients;
+    }
+    
+    
     public String toString() {
     	String atc = "";
     	for (String atcCode : atcCodes) {

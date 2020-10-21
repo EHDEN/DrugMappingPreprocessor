@@ -13,6 +13,7 @@ import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
 import org.ohdsi.drugmapping.gui.files.XMLInputFileGUI;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.source.SourceDrug;
+import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 
 public class AEMPS extends Preprocessor {
 	private static final long serialVersionUID = -1201878622903991675L;
@@ -77,6 +78,7 @@ public class AEMPS extends Preprocessor {
 
 	private boolean getAEMPSPrecsripcionPrincipiosActivos(XMLInputFileGUI principiosActivosFile) {
 		boolean result = true;
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading AEMPS Active Ingredients File ...");
 		Integer ingredientCount = 0;
 		if (principiosActivosFile.openFileForReading()) {
 			for (XMLNode principiosActivo : principiosActivosFile.getXMLRoot().getChildren("principiosactivos")) {
@@ -86,14 +88,20 @@ public class AEMPS extends Preprocessor {
 					ingredientCount++;
 				}
 			}
+	        System.out.println(DrugMappingDateUtilities.getCurrentTime() + "    Principios Activos  : " + ingredientCount);
+		}  
+		else {
+			System.out.println("ERROR: Cannot read AEMPS Active Ingredients File \"" + principiosActivosFile.getFileName() + "\"!");
+			result = false;
 		}
-        System.out.println("    Principios Activos  : " + ingredientCount);  
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
         return result;
 	}
 
 
 	private boolean getAEMPSPrescripcionFormasFarmaceuticas(XMLInputFileGUI formasFarmaceuticasFile) {
 		boolean result = true;
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading AEMPS Dose Forms File ...");
 		Integer formulationCount = 0;
 		if (formasFarmaceuticasFile.openFileForReading()) {
 			for (XMLNode formaFarmaceutica : formasFarmaceuticasFile.getXMLRoot().getChildren("formasfarmaceuticas")) {
@@ -103,28 +111,40 @@ public class AEMPS extends Preprocessor {
 					formulationCount++;
 				}
 			}
+	        System.out.println(DrugMappingDateUtilities.getCurrentTime() + "    Formas Farmaceuticas: " + formulationCount); 
 		}
-        System.out.println("    Formas Farmaceuticas: " + formulationCount); 
+		else {
+			System.out.println("ERROR: Cannot read AEMPS Dose Forms File \"" + formasFarmaceuticasFile.getFileName() + "\"!");
+			result = false;
+		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
         return result; 
 	}
 
 
 	private boolean getAEMPSPrescripcion(XMLInputFileGUI prescripcionFile) {
 		boolean result = true;
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading AEMPS Drugs File ...");
 		Integer drugCount = 0;
 		if (prescripcionFile.openFileForReading()) {
 			for (XMLNode prescription : prescripcionFile.getXMLRoot().getChildren("prescription")) {
 				drugsList.add(prescription);
 				drugCount++;
 			}
-		}  
-        System.out.println("    Prescriptions       : " + drugCount);
+	        System.out.println(DrugMappingDateUtilities.getCurrentTime() + "    Prescriptions: " + drugCount);
+		}
+		else {
+			System.out.println("ERROR: Cannot read AEMPS Drugs File \"" + prescripcionFile.getFileName() + "\"!");
+			result = false;
+		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
         return result;
 	}
 	
 	
 	private boolean getAEMPSSourceDataCounts(DelimitedInputFileGUI codeCountsFile) {
 		boolean result = true;
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading AEMPS Code Counts File ...");
 		Integer countsCount = 0;
 		if (codeCountsFile.openFileForReading()) {
 			while (codeCountsFile.hasNext()) {
@@ -138,18 +158,20 @@ public class AEMPS extends Preprocessor {
 						count = Long.parseLong(countString);
 					} catch (NumberFormatException e) {
 						count = -1L;
-						System.out.println("Illegal count \"" + countString + "\"");
+						warnings.add("Illegal count \"" + countString + "\"");
 					}
 				}
 
 				countsMap.put(drugNr, count);
 				countsCount++;
 			}
-	        System.out.println("    Counts              : " + countsCount);
+	        System.out.println(DrugMappingDateUtilities.getCurrentTime() + "    Counts: " + countsCount);
 		}
 		else {
-			System.out.println("Cannot read file \"" + codeCountsFile.getFileName() + "\"!");
+			System.out.println("ERROR: Cannot read AEMPS Code Counts File \"" + codeCountsFile.getFileName() + "\"!");
+			result = false;
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
         return result;
 	}
 	
@@ -157,15 +179,12 @@ public class AEMPS extends Preprocessor {
 	public boolean buildSourceDrugs() {
 		boolean result = true;
 		
-		System.out.println("  Building source drugs");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Building source drugs");
 
-		Integer drugWarningCount = 0;
-		Integer warningCount = 0;
 		XMLNode lastPrescription = null;
 		try {
 			for (XMLNode prescription : drugsList) {
 				lastPrescription = prescription;
-				boolean warnings = false;
 				
 				SourceDrug sourceDrug = source.addSourceDrug(prescription.getValue("cod_nacion"), prescription.getValue("des_nomco"), countsMap.get(prescription.getValue("cod_nacion")) == null ? -1L : countsMap.get(prescription.getValue("cod_nacion")));
 				if (prescription.getChild("atc") != null) {
@@ -229,10 +248,7 @@ public class AEMPS extends Preprocessor {
 											dosage = dosage_pa / dosage_com; 
 										}
 										if (dosage == null) {
-											System.out.println("WARNING: No dosage available for ingredient " + ingredientDefinition.getValue("cod_principio_activo"));
-											System.out.println(prescription.toString("         "));
-											warningCount++;
-											warnings = true;
+											warnings.add("No dosage available for ingredient " + ingredientDefinition.getValue("cod_principio_activo") + "\r\n" + prescription.toString("         "));
 										}
 
 										if ((dosage == null) || (dosage <= 0)) {
@@ -246,9 +262,6 @@ public class AEMPS extends Preprocessor {
 						}
 					}
 				}
-				if (warnings) {
-					drugWarningCount++;
-				}
 			}
 		}
 		catch (Exception exception) {
@@ -259,9 +272,7 @@ public class AEMPS extends Preprocessor {
 			result = false;
 		}
 		
-		System.out.println("    WARNINGS   : " + warningCount + " on " + drugWarningCount + " drugs");
-		System.out.println("  Done");
-		System.out.println();
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 		
 		return result;
 	}

@@ -8,6 +8,7 @@ import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.files.ExcelInputFileGUI;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.source.SourceDrug;
+import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class MEDAMAN extends Preprocessor {
@@ -52,9 +53,9 @@ public class MEDAMAN extends Preprocessor {
 	
 	private boolean getDrugData(ExcelInputFileGUI drugsFile) {
 		boolean result = true;
-		
+
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading drugs");
 		if (drugsFile.openFileForReading(true)) {
-			System.out.println("    Loading drugs");
 
 			while (drugsFile.hasNext()) {
 				Row row = drugsFile.getNext();
@@ -128,12 +129,12 @@ public class MEDAMAN extends Preprocessor {
 				}
 			}
 
-			System.out.println("      Found " + source.getDrugCount() + " drugs");
-			System.out.println("    Done");
+			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + source.getDrugCount() + " drugs");
 		}
 		else {
-			System.out.println("ERROR: Cannot open drugs file \"" + drugsFile.getFileName() + "\"!");
+			System.out.println("   ERROR: Cannot open drugs file \"" + drugsFile.getFileName() + "\"!");
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 
 		return result;
 	}
@@ -142,9 +143,9 @@ public class MEDAMAN extends Preprocessor {
 	private boolean getATCData(ExcelInputFileGUI atcFile) {
 		boolean result = true;
 
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading ATC codes");
 		Integer atcCount = 0;
 		if (atcFile.openFileForReading(true)) {
-			System.out.println("    Loading ATC codes");
 			
 			while (atcFile.hasNext()) {
 				Row row = atcFile.getNext();
@@ -165,13 +166,13 @@ public class MEDAMAN extends Preprocessor {
 				}
 			}
 
-			System.out.println("      Found " + atcCount + " atc codes");
-			System.out.println("    Done");
+			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + atcCount + " atc codes");
 		}
 		else {
-			System.out.println("ERROR: Cannot open atc file \"" + atcFile.getFileName() + "\"!");
+			System.out.println("   ERROR: Cannot open atc file \"" + atcFile.getFileName() + "\"!");
 			result = false;
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 
 		return result;
 	}
@@ -180,11 +181,11 @@ public class MEDAMAN extends Preprocessor {
 	private boolean getCountData(ExcelInputFileGUI countsFile) {
 		boolean result = true;
 
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading drug use counts");
 		Integer countCount = 0;
 		if (countsFile.openFileForReading(true)) {
 			Integer drugCodeColumnNr = countsFile.getColumnNr("DrugCode");
 			if (drugCodeColumnNr != null) {
-				System.out.println("    Loading drug use counts");
 				
 				Integer countColumnNr = drugCodeColumnNr + 1;
 				
@@ -205,17 +206,17 @@ public class MEDAMAN extends Preprocessor {
 					}
 				}
 
-				System.out.println("      Found " + countCount + " drug use counts.");
-				System.out.println("    Done");
+				System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + countCount + " drug use counts.");
 			}
 			else {
-				System.out.println("ERROR: Cannot get counts column in file \"" + countsFile.getFileName() + "\"!");
+				System.out.println("   ERROR: Cannot get counts column in file \"" + countsFile.getFileName() + "\"!");
 			}
 		}
 		else {
-			System.out.println("ERROR: Cannot open counts file \"" + countsFile.getFileName() + "\"!");
+			System.out.println("   ERROR: Cannot open counts file \"" + countsFile.getFileName() + "\"!");
 			result = false;
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 
 		return result;
 	}

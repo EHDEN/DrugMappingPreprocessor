@@ -12,6 +12,7 @@ import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.files.ExcelInputFileGUI;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.source.SourceDrug;
+import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class Laegemiddelstyrelsen extends Preprocessor {
@@ -62,8 +63,8 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 	
 	private boolean getDrugs(ExcelInputFileGUI drugsFile) {
 		boolean result = true;
-		
-		System.out.println("    Loading drugs");
+
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading Laegemiddelstyrelsen Drugs File ...");
 		if (drugsFile.openFileForReading(true)) {
 			while (drugsFile.hasNext()) {
 				Row row = drugsFile.getNext();
@@ -98,13 +99,13 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 					}
 				}
 			}
+			System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + source.getDrugCount() + " drugs.");
 		}
 		else {
 			System.out.println("ERROR: Cannot open drugs file \"" + drugsFile.getFileName() + "\"!");
 			result = false;
 		}
-		System.out.println("      Found " + source.getDrugCount() + " drugs.");
-		System.out.println("    Done");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 		
 		return result;
 	}
@@ -112,12 +113,12 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 	
 	private boolean getDrugCompounds(ExcelInputFileGUI activeCompoundsFile, ExcelInputFileGUI retiredCompoundsFile) {
 		boolean result = true;
-		
-		System.out.println("    Loading drug compounds");
+
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading Laegemiddelstyrelsen Compounds ...");
 		result = result && getCompounds(activeCompoundsFile);
 		result = result && getCompounds(retiredCompoundsFile);
-		System.out.println("      Found " + compoundDrugsMap.keySet().size() + " drug compounds.");
-		System.out.println("    Done");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + compoundDrugsMap.keySet().size() + " drug compounds.");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 		
 		return result;
 	}
@@ -125,7 +126,8 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 	
 	private boolean getCompounds(ExcelInputFileGUI compoundsFile) {
 		boolean result = true;
-		
+
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Loading " + compoundsFile.getFileDefinition().getFileName() + " ...");
 		if (compoundsFile.openFileForReading(true)) {
 			while (compoundsFile.hasNext()) {
 				Row row = compoundsFile.getNext();
@@ -167,6 +169,7 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 			System.out.println("ERROR: Cannot open compounds file \"" + compoundsFile.getFileName() + "\"!");
 			result = false;
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Done");
 		return result;
 	}
 	
@@ -174,6 +177,7 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 	private boolean getCountData(ExcelInputFileGUI countsFile) {
 		boolean result = true;
 
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Loading Laegemiddelstyrelsen ScanReport File ...");
 		Integer countCount = 0;
 		if (countsFile.openFileForReading(true)) {
 			Integer drugCodeColumnNr = countsFile.getColumnNr("DrugCode");
@@ -196,8 +200,7 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 					}
 				}
 
-				System.out.println("      Found " + countCount + " drug use counts.");
-				System.out.println("    Done");
+				System.out.println(DrugMappingDateUtilities.getCurrentTime() + "      Found " + countCount + " drug use counts.");
 			}
 			else {
 				System.out.println("ERROR: Cannot get counts column in file \"" + countsFile.getFileName() + "\"!");
@@ -207,6 +210,7 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 			System.out.println("ERROR: Cannot open counts file \"" + countsFile.getFileName() + "\"!");
 			result = false;
 		}
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 		
 		return result;
 	}

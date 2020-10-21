@@ -33,6 +33,7 @@ import org.ohdsi.drugmapping.gui.Setting;
 import org.ohdsi.drugmapping.gui.files.Folder;
 import org.ohdsi.drugmapping.gui.files.InputFileGUI;
 import org.ohdsi.drugmapping.source.Source;
+import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
 
 abstract public class Preprocessor extends JPanel implements Comparable<Preprocessor> {
 	private static final long serialVersionUID = -2611669075696826114L;
@@ -50,6 +51,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	protected boolean isPreprocessing = false;
 
 	protected Source source = new Source();
+	protected List<String> warnings = new ArrayList<String>();
 	
 
 	public Preprocessor(DrugMappingPreprocessor drugMapping, MainFrame mainFrame, String preprocessorName, InputFileDefinition inputFileDefinition) {
@@ -361,7 +363,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 			System.out.println();
 		}
 		
-		System.out.println("Preprocessing " + getPreprocessorName() + " Drugs");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + " Preprocessing " + getPreprocessorName() + " Drugs");
 
 		System.out.println("  Loading data");
 		boolean getDataResult = getData();
@@ -371,7 +373,16 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 			writeInputFile(outputFileName);
 		}
 		
-		System.out.println("Finished");
+		if (warnings.size() > 0) {
+			System.out.println();
+			System.out.println("Warnings:");
+			for (String warning : warnings) {
+				System.out.println("   " + warning);
+			}
+			System.out.println();
+		}
+		
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + " Finished" + (warnings.size() > 0 ? (" with " + Integer.toString(warnings.size()) + " warnings") : ""));
 		System.out.println();
 	}
 	
@@ -379,13 +390,13 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	protected boolean writeInputFile(String outputFileName) {
 		boolean result = true;
 		
-		System.out.println("  Writing drug mapping input file \"" + outputFileName + "\"");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Writing drug mapping input file \"" + outputFileName + "\"");
 		
 		if (!source.save(outputFileName, true, true)) {
 			System.out.println("ERROR: Cannot write input file \"" + outputFileName + "\"!");
 		}
 		
-		System.out.println("  Done");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
 		
 		return result;
 	}

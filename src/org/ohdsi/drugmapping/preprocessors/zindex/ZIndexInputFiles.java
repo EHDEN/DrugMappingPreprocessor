@@ -7,10 +7,10 @@ import org.ohdsi.drugmapping.files.FileColumnDefinition;
 import org.ohdsi.drugmapping.files.FileDefinition;
 import org.ohdsi.drugmapping.files.InputFileDefinition;
 
-public class ZIndexPreprocessorInputFiles extends InputFileDefinition {
+public class ZIndexInputFiles extends InputFileDefinition {
 	
 
-	public ZIndexPreprocessorInputFiles() {
+	public ZIndexInputFiles() {
 		inputFiles = new ArrayList<FileDefinition>(
 				Arrays.asList(
 						new FileDefinition(
