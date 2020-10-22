@@ -17,7 +17,7 @@ public class SourceIngredient {
     	header += "," + "IngredientNameEnglish";
     	header += "," + "Dosage";
     	header += "," + "DosageUnit";
-    	header += "," + "CASNumer";
+    	header += "," + "CASNumber";
     	return header;
     }
     

@@ -182,8 +182,6 @@ public class Laegemiddelstyrelsen extends Preprocessor {
 		if (countsFile.openFileForReading(true)) {
 			Integer drugCodeColumnNr = countsFile.getColumnNr("DrugCode");
 			if (drugCodeColumnNr != null) {
-				System.out.println("    Loading drug use counts");
-				
 				Integer countColumnNr = drugCodeColumnNr + 1;
 				
 				while (countsFile.hasNext()) {
