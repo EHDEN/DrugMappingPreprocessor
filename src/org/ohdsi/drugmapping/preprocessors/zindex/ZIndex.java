@@ -21,18 +21,19 @@ public class ZIndex extends Preprocessor {
 
 	private static final boolean IGNORE_EMPTY_GPK_NAMES   = false;
 	private static final boolean IGNORE_STARRED_GPK_NAMES = false;
+	private static final boolean TRY_EXTRACT              = false;
 	
 	private static final String NUMBER_CHARS = "1234567890,.";
 	
-	private Map<String, GNK>           gnkMap;
-	private Map<String, GNK>           gnkNameMap;
-	private Map<String, GSK>           gskMap;
-	private List<GPK>                  gpkList;
-	private Map<String, GPK>           gpkMap;
-	private Map<String, List<GPKIPCI>> gpkIPCIMap;
-	private Map<GNK, List<GPK>>        gnkOneIngredientGpkMap;
-	private Map<String, Long>          gpkCountMap;
-	private List<String>               wordsToRemove = new ArrayList<String>();
+	private Map<Integer, GNK>           gnkMap;
+	private Map<String, GNK>            gnkNameMap;
+	private Map<Integer, GSK>           gskMap;
+	private List<GPK>                   gpkList;
+	private Map<Integer, GPK>           gpkMap;
+	private Map<Integer, List<GPKIPCI>> gpkIPCIMap;
+	private Map<GNK, List<GPK>>         gnkOneIngredientGpkMap;
+	private Map<Integer, Long>          gpkCountMap;
+	private List<String>                wordsToRemove = new ArrayList<String>();
 	
 	
 	public ZIndex(DrugMappingPreprocessor drugMapping, MainFrame mainFrame) {
@@ -69,13 +70,13 @@ public class ZIndex extends Preprocessor {
 
 	@Override
 	public boolean getData() {
-		gnkMap = new HashMap<String, GNK>();
+		gnkMap = new HashMap<Integer, GNK>();
 		gnkNameMap = new HashMap<String, GNK>();
-		gskMap = new HashMap<String, GSK>();
+		gskMap = new HashMap<Integer, GSK>();
 		gpkList = new ArrayList<GPK>();
-		gpkMap = new HashMap<String, GPK>();
-		gpkIPCIMap = new HashMap<String, List<GPKIPCI>>();
-		gpkCountMap = new HashMap<String, Long>();
+		gpkMap = new HashMap<Integer, GPK>();
+		gpkIPCIMap = new HashMap<Integer, List<GPKIPCI>>();
+		gpkCountMap = new HashMap<Integer, Long>();
 		gnkOneIngredientGpkMap = new HashMap<GNK, List<GPK>>();
 
 		boolean result = getGNK((DelimitedInputFileGUI) getInputFile("ZIndex GNK File"));
@@ -102,9 +103,18 @@ public class ZIndex extends Preprocessor {
 				String gnkCASNumber       = DrugMappingStringUtilities.removeExtraSpaces(gnkFile.get(row, "CASNumber", true));
 				String gnkBaseName        = DrugMappingStringUtilities.removeExtraSpaces(gnkFile.get(row, "BaseName", true));
 				String gnkChemicalFormula = DrugMappingStringUtilities.removeExtraSpaces(gnkFile.get(row, "ChemicalFormula", true));
-
+				
+				Integer gnkNr = null;
 				if ((gnkCode != null) && (!gnkCode.trim().equals(""))) {
-					GNK gnk = new GNK(gnkCode, gnkDescription, gnkCASNumber, gnkBaseName, gnkChemicalFormula);
+					try {
+						gnkNr = Integer.valueOf(gnkCode.trim());
+					} catch (NumberFormatException e) {
+						warnings.add("Illegal GNK number on line " + lineNr + " of ZIndex GNK File \"" + gnkFile.getFileName() + "\"");
+					}
+				}
+
+				if (gnkNr != null) {
+					GNK gnk = new GNK(gnkNr, gnkDescription, gnkCASNumber, gnkBaseName, gnkChemicalFormula);
 					result = result && gnk.ok; 
 				}
 				else {
@@ -140,13 +150,31 @@ public class ZIndex extends Preprocessor {
 				String gskGNKCode       = DrugMappingStringUtilities.removeExtraSpaces(gskFile.get(row, "GNKCode", true));
 				String gskGenericName   = DrugMappingStringUtilities.removeExtraSpaces(gskFile.get(row, "GenericName", true));
 				String gskCASNumber     = DrugMappingStringUtilities.removeExtraSpaces(gskFile.get(row, "CASNumber", true));
-
+				
+				Integer gskNr = null;
 				if ((gskCode != null) && (!gskCode.trim().equals(""))) {
-					GSK gsk = gskMap.get(gskCode);
-					if (gsk == null) {
-						gsk = new GSK(gskCode);
+					try {
+						gskNr = Integer.valueOf(gskCode);
+					} catch (NumberFormatException e) {
+						warnings.add("Illegal GSK number on line " + lineNr + " of ZIndex GSK File \"" + gskFile.getFileName() + "\"");
 					}
-					gsk.addGNK(gskGNKCode, gskPartNumber, gskType, gskAmount, gskAmountUnit, gskGenericName, gskCASNumber);
+				}
+				
+				Integer gskGNKNr = null;
+				if ((gskGNKCode != null) && (!gskGNKCode.trim().equals(""))) {
+					try {
+						gskGNKNr = Integer.valueOf(gskGNKCode.trim());
+					} catch (NumberFormatException e) {
+						warnings.add("Illegal GNK number on line " + lineNr + " of ZIndex GSK File \"" + gskFile.getFileName() + "\"");
+					}
+				}
+
+				if (gskNr != null) {
+					GSK gsk = gskMap.get(gskNr);
+					if (gsk == null) {
+						gsk = new GSK(gskNr);
+					}
+					gsk.addGNK(gskGNKNr, gskPartNumber, gskType, gskAmount, gskAmountUnit, gskGenericName, gskCASNumber);
 				}
 				else {
 					warnings.add("Missing GSK code on line " + lineNr + " of ZIndex GSK File \"" + gskFile.getFileName() + "\"");
@@ -188,9 +216,25 @@ public class ZIndex extends Preprocessor {
 				String gpkBasicUnit        = DrugMappingStringUtilities.removeExtraSpaces(gpkFile.get(row, "BasicUnit", true));
 				
 				if ((gpkCode != null) && (!gpkCode.trim().equals(""))) {
-					GPK gpk = gpkMap.get(gpkCode.trim());
+					Integer gpkNr = null;
+					try {
+						gpkNr = Integer.valueOf(gpkCode.trim());
+					} catch (NumberFormatException e) {
+						warnings.add("Illegal GPK number on line " + lineNr + " of ZIndex GPK File \"" + gpkFile.getFileName() + "\"");
+					}
+
+					Integer gskNr = null;
+					if (!gpkGSKCode.trim().equals("")) {
+						try {
+							gskNr = Integer.valueOf(gpkGSKCode.trim());
+						} catch (NumberFormatException e) {
+							warnings.add("Illegal GSK number on line " + lineNr + " of ZIndex GPK File \"" + gpkFile.getFileName() + "\"");
+						}
+					}
+					
+					GPK gpk = gpkMap.get(gpkNr);
 					if (gpk == null) {
-						gpk = new GPK(gpkCode, gpkMemoCode, gpkLabelName, gpkShortName, gpkFullName, gpkATCCode, gpkGSKCode, gpkDDDPerHPKUnit, gpkPrescriptionDays, gpkHPKMG, gpkHPKMGUnit, gpkPharmForm, gpkBasicUnit);
+						gpk = new GPK(gpkNr, gpkMemoCode, gpkLabelName, gpkShortName, gpkFullName, gpkATCCode, gskNr, gpkDDDPerHPKUnit, gpkPrescriptionDays, gpkHPKMG, gpkHPKMGUnit, gpkPharmForm, gpkBasicUnit);
 					}
 				}
 				else {
@@ -199,8 +243,8 @@ public class ZIndex extends Preprocessor {
 				lineNr++;
 			}
 			
-			for (String gpkCode : gpkMap.keySet()) {
-				GPK gpk = gpkMap.get(gpkCode);
+			for (Integer gpkNr : gpkMap.keySet()) {
+				GPK gpk = gpkMap.get(gpkNr);
 				if ((gpk != null) && (gpk.gsk != null) && (gpk.gsk.gnkList != null) && (gpk.gsk.gnkList.size() == 1)) {
 					GNK gnk = gpk.gsk.gnkList.get(0).gnk;
 					if (gnk != null) {
@@ -246,7 +290,25 @@ public class ZIndex extends Preprocessor {
 					String chemicalFormula = DrugMappingStringUtilities.removeExtraSpaces(gpkIPCIFile.get(row, "ChemicalFormula", true));
 					
 					if ((code != null) && (!code.equals(""))) {
-						new GPKIPCI(code, partNumber, type, amount, amountUnit, gnkCode, gnkName, casNumber, baseName, chemicalFormula);
+						Integer gpkNr = null;
+						try {
+							gpkNr = Integer.valueOf(code);
+						} catch (NumberFormatException e) {
+							warnings.add("Illegal GPK code on line " + lineNr + " of ZIndex GPK IPCI Compositions File \"" + gpkIPCIFile.getFileName() + "\"");
+						}
+						
+						Integer gnkNr = null;
+						if ((gnkCode != null) && (!gnkCode.trim().equals(""))) {
+							try {
+								gnkNr = Integer.valueOf(gnkCode);
+							} catch (NumberFormatException e) {
+								warnings.add("Illegal GNK code on line " + lineNr + " of ZIndex GPK IPCI Compositions File \"" + gpkIPCIFile.getFileName() + "\"");
+							}
+						}
+						
+						if (gpkNr != null) {
+							new GPKIPCI(gpkNr, partNumber, type, amount, amountUnit, gnkNr, gnkName, casNumber, baseName, chemicalFormula);
+						}
 					}
 					else {
 						warnings.add("Missing GPK code on line " + lineNr + " of ZIndex GPK IPCI Compositions File \"" + gpkIPCIFile.getFileName() + "\"");
@@ -254,10 +316,11 @@ public class ZIndex extends Preprocessor {
 					lineNr++;
 				}
 				
-				for (String gpkCode : gpkMap.keySet()) {
-					GPK gpk = gpkMap.get(gpkCode);
-					if ((gpk != null) && (gpk.gsk != null) && (gpk.gsk.gnkList != null) && (gpk.gsk.gnkList.size() == 1)) {
-						GNK gnk = gpk.gsk.gnkList.get(0).gnk;
+				for (Integer gpkNr : gpkMap.keySet()) {
+					List<GPKIPCI> gpkIPCIList = gpkIPCIMap.get(gpkNr);
+					GPK gpk = gpkMap.get(gpkNr);
+					if ((gpk != null) && (gpkIPCIList != null) && (gpkIPCIList.size() == 1)) {
+						GNK gnk =gpkIPCIList.get(0).gnk;
 						if (gnk != null) {
 							List<GPK> oneIngredientGPKs = gnkOneIngredientGpkMap.get(gnk);
 							if (oneIngredientGPKs == null) {
@@ -291,15 +354,21 @@ public class ZIndex extends Preprocessor {
 
 				String gpkCode  = DrugMappingStringUtilities.removeExtraSpaces(gpkStatisticsFile.get(row, "GPKCode", true));
 				String gpkCount = DrugMappingStringUtilities.removeExtraSpaces(gpkStatisticsFile.get(row, "GPKCount", true));
+				
+				Integer gpkNr = null;
+				try {
+					gpkNr = Integer.valueOf(gpkCode);
+				} catch (NumberFormatException e) {
+					warnings.add("Illegal GPK number on line " + lineNr + " of ZIndex GPK Statistics File \"" + gpkStatisticsFile.getFileName() + "\"");
+				}
 
 				Long count = null;
-				if ((gpkCode != null) && (!gpkCode.trim().equals(""))) {
+				if ((gpkNr != null) && (!gpkCode.trim().equals(""))) {
 					try {
 						count = Long.valueOf(gpkCount);
-						gpkCountMap.put(gpkCode, count);
-					}
-					catch (NumberFormatException e) {
-						warnings.add("Illegal count value in on line " + lineNr + " of ZIndex GPK Statistics File \"" + gpkStatisticsFile.getFileName() + "\"");
+						gpkCountMap.put(gpkNr, count);
+					} catch (NumberFormatException e) {
+						warnings.add("Illegal count value on line " + lineNr + " of ZIndex GPK Statistics File \"" + gpkStatisticsFile.getFileName() + "\"");
 					}
 				}
 				else {
@@ -335,226 +404,230 @@ public class ZIndex extends Preprocessor {
 			if (name.equals("")) name = gpk.labelName;
 			if (name.equals("")) name = gpk.shortName;
 			
-			SourceDrug sourceDrug = source.addSourceDrug(gpk.code, name, null);
-			sourceDrug.addFormulation(gpk.pharmForm);
-			sourceDrug.setCount(gpkCountMap.get(gpk.code));
-			
-			// Get IPCI derivation from Marcel de Wilde if it exists
-			List<GPKIPCI> gpkIPCIIngredients = gpkIPCIMap.get(gpk.code);
-			if (gpkIPCIIngredients != null) {
-				// IPCI derivation found
+			if ((!name.equals(""))) {
 				
-				// When no ATC-code try to get it from other GPK's with one and the same ingredient.
-				if ((gpkIPCIIngredients.size() == 1) && gpk.atcCode.equals("")) {
-					String foundATC = getAtcOfSingleIngredientGPK(gpkIPCIIngredients.get(0).gnk);
-					if (foundATC != null) {
-						gpk.atcCode = foundATC;
-						sourceDrug.addATC(gpk.atcCode);
-					}
-				}
+				SourceDrug sourceDrug = source.addSourceDrug(gpk.nr.toString(), name, null);
+				sourceDrug.addFormulation(gpk.pharmForm);
+				sourceDrug.setATC(gpk.atcCode);
+				sourceDrug.setCount(gpkCountMap.get(gpk.nr) == null ? 0 : gpkCountMap.get(gpk.nr));
 				
-				for (GPKIPCI gpkIPCIIngredient : gpkIPCIIngredients) {
-					String ingredientNumeratorUnit = gpkIPCIIngredient.amountUnit;
-					String ingredientDenominatorUnit = gpk.basicUnit.equals("Stuk") ? "" : gpk.basicUnit;
-					String ingredientUnit = ingredientDenominatorUnit.equals("") ? ingredientNumeratorUnit : (ingredientNumeratorUnit + "/" + ingredientDenominatorUnit);
+				// Get IPCI derivation from Marcel de Wilde if it exists
+				List<GPKIPCI> gpkIPCIIngredients = gpkIPCIMap.get(gpk.nr);
+				if (gpkIPCIIngredients != null) {
+					// IPCI derivation found
 					
-					Double amount = null;
-					if ((gpkIPCIIngredient.amount != null) && (!gpkIPCIIngredient.amount.equals(""))) {
-						try {
-							amount = Double.parseDouble(gpkIPCIIngredient.amount);
-						} catch (NumberFormatException e) {
-							amount = null;
+					// When no ATC-code try to get it from other GPK's with one and the same ingredient.
+					if ((gpkIPCIIngredients.size() == 1) && gpk.atcCode.equals("")) {
+						String foundATC = getAtcOfSingleIngredientGPK(gpkIPCIIngredients.get(0).gnk);
+						if (foundATC != null) {
+							gpk.atcCode = foundATC;
+							sourceDrug.setATC(gpk.atcCode);
 						}
 					}
 					
-					if (gpkIPCIIngredient.gnk != null) {
-						sourceDrug.addIngredient(gpkIPCIIngredient.gnk.code, gpkIPCIIngredient.gnkName, null, amount, ingredientUnit, gpkIPCIIngredient.casNumber);
-					}
-				}
-			}
-			else {
-				// Get Z-Index derivation
-
-				// Ignore empty names and names that start with a '*'
-				if (((!IGNORE_EMPTY_GPK_NAMES) || (!name.equals(""))) && ((!IGNORE_STARRED_GPK_NAMES) || (!name.substring(0, 1).equals("*")))) {
-					
-					List<GSKComponent> gnkList = new ArrayList<GSKComponent>();
-					
-					if (gpk.gsk != null) {
-						for (GSKComponent gskComponent : gpk.gsk.gnkList) {
-							if ((gskComponent.type.contentEquals("W"))) {
-								gnkList.add(gskComponent);
+					for (GPKIPCI gpkIPCIIngredient : gpkIPCIIngredients) {
+						String ingredientNumeratorUnit = gpkIPCIIngredient.amountUnit;
+						String ingredientDenominatorUnit = gpk.basicUnit.equals("Stuk") ? "" : gpk.basicUnit;
+						String ingredientUnit = ingredientDenominatorUnit.equals("") ? ingredientNumeratorUnit : (ingredientNumeratorUnit + "/" + ingredientDenominatorUnit);
+						
+						Double amount = null;
+						if ((gpkIPCIIngredient.amount != null) && (!gpkIPCIIngredient.amount.equals(""))) {
+							try {
+								amount = Double.parseDouble(gpkIPCIIngredient.amount);
+							} catch (NumberFormatException e) {
+								amount = null;
 							}
 						}
-
-						if (gnkList.size() == 0) {
-							gnkList = null;
-							warnings.add("No active ingredient GSK records (GSKCode = " + gpk.gsk.code + ") found for GPK " + gpk.code);
+						
+						if (gpkIPCIIngredient.gnk != null) {
+							sourceDrug.addIngredient(gpkIPCIIngredient.gnk.nr.toString(), gpkIPCIIngredient.gnkName, null, amount, ingredientUnit, gpkIPCIIngredient.casNumber);
 						}
 					}
-					
-					// Get ingredients and dosages from GSK and GNK tables
-					if ((gnkList != null) && (gnkList.size() > 0)) {
-						for (GSKComponent gskObject : gnkList) {
-							Double amount = null;
-							if ((gskObject.amount != null) && (!gskObject.amount.equals(""))) {
-								try {
-									amount = Double.parseDouble(gskObject.amount);
-								} catch (NumberFormatException e) {
-									amount = null;
+				}
+				else {
+					// Get Z-Index derivation
+
+					// Ignore empty names and names that start with a '*'
+					if (((!IGNORE_EMPTY_GPK_NAMES) || (!name.equals(""))) && ((!IGNORE_STARRED_GPK_NAMES) || (!name.substring(0, 1).equals("*")))) {
+						
+						List<GSKComponent> gnkList = new ArrayList<GSKComponent>();
+						
+						if (gpk.gsk != null) {
+							for (GSKComponent gskComponent : gpk.gsk.gnkList) {
+								if ((gskComponent.type.contentEquals("W"))) {
+									gnkList.add(gskComponent);
 								}
 							}
 
-							String ingredientNumeratorUnit = gskObject.amountUnit;
-							String ingredientDenominatorUnit = gpk.basicUnit.equals("Stuk") ? "" : gpk.basicUnit;
-							String amountUnit = ingredientDenominatorUnit.equals("") ? ingredientNumeratorUnit : (ingredientNumeratorUnit + "/" + ingredientDenominatorUnit);
-							
-							String genericName = cleanupExtractedIngredientName(gskObject.genericName);
-							
-							if (gskObject.gnk != null) {
-								sourceDrug.addIngredient(gskObject.gnk.code, genericName, null, amount, amountUnit, gskObject.gnk.casNumber);
+							if (gnkList.size() == 0) {
+								gnkList = null;
+								warnings.add("No active ingredient GSK records (GSKCode = " + gpk.gsk.nr + ") found for GPK " + gpk.nr);
 							}
 						}
-					}
-					else {
-						// Try to extract ingredients from name (separated by '/')
-						// List of words to remove from extracted parts.
-						// IMPORTANT:
-						//   The List wordsToRemove is an ordered list. The words are removed in the order of the list.
-						//   The appearance of the words are checked with surrounding parenthesis, with
-						//   surrounding spaces, and at the end of the extracted part.
 						
-						List<String> ingredientNames = new ArrayList<String>();
-						List<String> ingredientAmounts = new ArrayList<String>();
-						List<String> ingredientAmountUnits = new ArrayList<String>();
+						// Get ingredients and dosages from GSK and GNK tables
+						if ((gnkList != null) && (gnkList.size() > 0)) {
+							for (GSKComponent gskObject : gnkList) {
+								Double amount = null;
+								if ((gskObject.amount != null) && (!gskObject.amount.equals(""))) {
+									try {
+										amount = Double.parseDouble(gskObject.amount);
+									} catch (NumberFormatException e) {
+										amount = null;
+									}
+								}
 
-						String ingredients = gpk.shortName;
-						if (ingredients.contains(" ") && (!ingredients.substring(0, 1).equals("*"))) {
-							ingredients = ingredients.substring(0, ingredients.lastIndexOf(" "));
-						}
-						if (!ingredients.equals("")) {
-							if (ingredients.contains("/") || ingredients.contains("+")) {
-								String[] ingredientsSplit = ingredients.contains("/") ? ingredients.split("/") :  ingredients.split("\\+");
-								String doseString = getDoseString(gpk.fullName);
-								String[] doseStringSplit = doseString != null ? doseString.split("/") : null;
-								String denominatorUnit = DrugMappingStringUtilities.removeExtraSpaces((((doseStringSplit != null) && (doseStringSplit.length > ingredientsSplit.length)) ? doseStringSplit[ingredientsSplit.length] : ""));
-								String lastAmountUnit = null;
+								String ingredientNumeratorUnit = gskObject.amountUnit;
+								String ingredientDenominatorUnit = gpk.basicUnit.equals("Stuk") ? "" : gpk.basicUnit;
+								String amountUnit = ingredientDenominatorUnit.equals("") ? ingredientNumeratorUnit : (ingredientNumeratorUnit + "/" + ingredientDenominatorUnit);
 								
-								for (int ingredientNr = 0; ingredientNr < ingredientsSplit.length; ingredientNr++) {
-									String ingredientName = ingredientsSplit[ingredientNr];
-									ingredientName = DrugMappingStringUtilities.removeExtraSpaces(ingredientName);
-									if (ingredientName != null) {
-										ingredientNames.add(ingredientName);
-										
-										String amount = "";
-										String amountUnit = "";
-										if (doseStringSplit != null) {
-											if (ingredientNr < doseStringSplit.length) {
-												String ingredientDoseString = doseStringSplit[ingredientNr];
-												String numberChars = NUMBER_CHARS;
-												for (int charNr = 0; charNr < ingredientDoseString.length(); charNr++) {
-													if (numberChars.indexOf(ingredientDoseString.charAt(charNr)) < 0) {
-														break;
+								String genericName = cleanupExtractedIngredientName(gskObject.genericName);
+								
+								if (gskObject.gnk != null) {
+									sourceDrug.addIngredient(gskObject.gnk.nr.toString(), genericName, null, amount, amountUnit, gskObject.gnk.casNumber);
+								}
+							}
+						}
+						else if (TRY_EXTRACT) {
+							// Try to extract ingredients from name (separated by '/')
+							// List of words to remove from extracted parts.
+							// IMPORTANT:
+							//   The List wordsToRemove is an ordered list. The words are removed in the order of the list.
+							//   The appearance of the words are checked with surrounding parenthesis, with
+							//   surrounding spaces, and at the end of the extracted part.
+							
+							List<String> ingredientNames = new ArrayList<String>();
+							List<String> ingredientAmounts = new ArrayList<String>();
+							List<String> ingredientAmountUnits = new ArrayList<String>();
+
+							String ingredients = gpk.shortName;
+							if (ingredients.contains(" ") && (!ingredients.substring(0, 1).equals("*"))) {
+								ingredients = ingredients.substring(0, ingredients.lastIndexOf(" "));
+							}
+							if (!ingredients.equals("")) {
+								if (ingredients.contains("/") || ingredients.contains("+")) {
+									String[] ingredientsSplit = ingredients.contains("/") ? ingredients.split("/") :  ingredients.split("\\+");
+									String doseString = getDoseString(gpk.fullName);
+									String[] doseStringSplit = doseString != null ? doseString.split("/") : null;
+									String denominatorUnit = DrugMappingStringUtilities.removeExtraSpaces((((doseStringSplit != null) && (doseStringSplit.length > ingredientsSplit.length)) ? doseStringSplit[ingredientsSplit.length] : ""));
+									String lastAmountUnit = null;
+									
+									for (int ingredientNr = 0; ingredientNr < ingredientsSplit.length; ingredientNr++) {
+										String ingredientName = ingredientsSplit[ingredientNr];
+										ingredientName = DrugMappingStringUtilities.removeExtraSpaces(ingredientName);
+										if (ingredientName != null) {
+											ingredientNames.add(ingredientName);
+											
+											String amount = "";
+											String amountUnit = "";
+											if (doseStringSplit != null) {
+												if (ingredientNr < doseStringSplit.length) {
+													String ingredientDoseString = doseStringSplit[ingredientNr];
+													String numberChars = NUMBER_CHARS;
+													for (int charNr = 0; charNr < ingredientDoseString.length(); charNr++) {
+														if (numberChars.indexOf(ingredientDoseString.charAt(charNr)) < 0) {
+															break;
+														}
+														amount += ingredientDoseString.charAt(charNr);
 													}
-													amount += ingredientDoseString.charAt(charNr);
-												}
-												amount = amount.replace(",", ".");
-												amountUnit = ingredientDoseString.substring(amount.length());
-												if ((!amountUnit.equals("")) && (amountUnit.substring(0, 1).equals("-"))) { // Solve things like 5-WATER
-													amount = "";
-													amountUnit = "";
+													amount = amount.replace(",", ".");
+													amountUnit = ingredientDoseString.substring(amount.length());
+													if ((!amountUnit.equals("")) && (amountUnit.substring(0, 1).equals("-"))) { // Solve things like 5-WATER
+														amount = "";
+														amountUnit = "";
+													}
 												}
 											}
+											lastAmountUnit = amountUnit;
+											ingredientAmounts.add(amount);
+											ingredientAmountUnits.add(amountUnit);
 										}
-										lastAmountUnit = amountUnit;
+										else {
+											ingredientNames.add(null);
+											ingredientAmounts.add(null);
+											ingredientAmountUnits.add(null);
+										}
+									}
+
+									// Fill missing units
+									for (int ingredientNr = 0; ingredientNr < ingredientNames.size(); ingredientNr++) {
+										if (ingredientNames.get(ingredientNr) != null) {
+											String amountUnit = ingredientAmountUnits.get(ingredientNr);
+											if (amountUnit.equals("")) {
+												amountUnit = lastAmountUnit;
+											}
+											ingredientAmountUnits.set(ingredientNr, amountUnit.equals("") ? denominatorUnit : (denominatorUnit.equals("") ? amountUnit : amountUnit + "/" + denominatorUnit));
+										}
+									}
+								}
+								else {
+									String ingredientName = ingredients;
+									
+									if (ingredientName != null) {
+										String amount = "";
+										String amountUnit = "";
+
+										String doseString = getDoseString(gpk.fullName);
+										String[] doseStringSplit = doseString != null ? doseString.split("/") : null;
+										if (doseStringSplit != null) {
+											String denominatorUnit = "";
+											if (doseString.contains("/")) {
+												doseString = doseStringSplit[0];
+												denominatorUnit = DrugMappingStringUtilities.removeExtraSpaces((doseStringSplit.length > 1 ? doseStringSplit[1] : ""));
+											}
+											String numberChars = NUMBER_CHARS;
+											for (int charNr = 0; charNr < doseString.length(); charNr++) {
+												if (numberChars.indexOf(doseString.charAt(charNr)) < 0) {
+													break;
+												}
+												amount += doseString.charAt(charNr);
+											}
+											amount = amount.replace(",", ".");
+											amountUnit = doseString.substring(amount.length());
+											if ((!amountUnit.equals("")) && (amountUnit.substring(0, 1).equals("-"))) { // Solve things like 5-WATER
+												amount = "";
+												amountUnit = "";
+											}
+											else {
+												amountUnit = amountUnit.equals("") ? denominatorUnit : (denominatorUnit.equals("") ? amountUnit : amountUnit + "/" + denominatorUnit);
+											}
+										}
+										
+										ingredientNames.add(ingredientName);
 										ingredientAmounts.add(amount);
 										ingredientAmountUnits.add(amountUnit);
 									}
-									else {
-										ingredientNames.add(null);
-										ingredientAmounts.add(null);
-										ingredientAmountUnits.add(null);
-									}
 								}
 
-								// Fill missing units
 								for (int ingredientNr = 0; ingredientNr < ingredientNames.size(); ingredientNr++) {
-									if (ingredientNames.get(ingredientNr) != null) {
-										String amountUnit = ingredientAmountUnits.get(ingredientNr);
-										if (amountUnit.equals("")) {
-											amountUnit = lastAmountUnit;
-										}
-										ingredientAmountUnits.set(ingredientNr, amountUnit.equals("") ? denominatorUnit : (denominatorUnit.equals("") ? amountUnit : amountUnit + "/" + denominatorUnit));
-									}
-								}
-							}
-							else {
-								String ingredientName = ingredients;
-								
-								if (ingredientName != null) {
-									String amount = "";
-									String amountUnit = "";
-
-									String doseString = getDoseString(gpk.fullName);
-									String[] doseStringSplit = doseString != null ? doseString.split("/") : null;
-									if (doseStringSplit != null) {
-										String denominatorUnit = "";
-										if (doseString.contains("/")) {
-											doseString = doseStringSplit[0];
-											denominatorUnit = DrugMappingStringUtilities.removeExtraSpaces((doseStringSplit.length > 1 ? doseStringSplit[1] : ""));
-										}
-										String numberChars = NUMBER_CHARS;
-										for (int charNr = 0; charNr < doseString.length(); charNr++) {
-											if (numberChars.indexOf(doseString.charAt(charNr)) < 0) {
-												break;
+									String ingredientName = ingredientNames.get(ingredientNr);
+									
+									if (ingredientName != null) {
+										Double amount = null;
+										if ((ingredientAmounts.get(ingredientNr) != null) && (!ingredientAmounts.get(ingredientNr).equals(""))) {
+											try {
+												amount = Double.parseDouble(ingredientAmounts.get(ingredientNr));
+											} catch (NumberFormatException e) {
+												amount = null;
 											}
-											amount += doseString.charAt(charNr);
 										}
-										amount = amount.replace(",", ".");
-										amountUnit = doseString.substring(amount.length());
-										if ((!amountUnit.equals("")) && (amountUnit.substring(0, 1).equals("-"))) { // Solve things like 5-WATER
-											amount = "";
-											amountUnit = "";
-										}
-										else {
-											amountUnit = amountUnit.equals("") ? denominatorUnit : (denominatorUnit.equals("") ? amountUnit : amountUnit + "/" + denominatorUnit);
-										}
+										String amountUnit = ingredientAmountUnits.get(ingredientNr);
+										
+										GNK gnk = gnkNameMap.get(ingredientName);
+										
+										sourceDrug.addIngredient(gnk == null ? "" : gnk.nr.toString(), ingredientName, null, amount, amountUnit, gnk == null ? null : gnk.casNumber);
 									}
-									
-									ingredientNames.add(ingredientName);
-									ingredientAmounts.add(amount);
-									ingredientAmountUnits.add(amountUnit);
-								}
-							}
-
-							for (int ingredientNr = 0; ingredientNr < ingredientNames.size(); ingredientNr++) {
-								String ingredientName = ingredientNames.get(ingredientNr);
-								
-								if (ingredientName != null) {
-									Double amount = null;
-									if ((ingredientAmounts.get(ingredientNr) != null) && (!ingredientAmounts.get(ingredientNr).equals(""))) {
-										try {
-											amount = Double.parseDouble(ingredientAmounts.get(ingredientNr));
-										} catch (NumberFormatException e) {
-											amount = null;
-										}
-									}
-									String amountUnit = ingredientAmountUnits.get(ingredientNr);
-									
-									GNK gnk = gnkNameMap.get(ingredientName);
-									
-									sourceDrug.addIngredient(gnk == null ? "" : gnk.code, ingredientName, null, amount, amountUnit, gnk == null ? null : gnk.casNumber);
 								}
 							}
 						}
 					}
-				}
-			}
 
-			for (SourceIngredient sourceIngredient : sourceDrug.getIngredients()) {
-				sourceIngredient.setDosageUnit(sourceIngredient.getDosageUnit().replaceAll("/Stuk", ""));
-				if (sourceIngredient.getDosageUnit().equals("Stuk")) {
-					sourceIngredient.setDosageUnit("");
+					for (SourceIngredient sourceIngredient : sourceDrug.getIngredients()) {
+						sourceIngredient.setDosageUnit(sourceIngredient.getDosageUnit().replaceAll("/Stuk", ""));
+						if (sourceIngredient.getDosageUnit().equals("Stuk")) {
+							sourceIngredient.setDosageUnit("");
+						}
+					}
 				}
 			}
 		}
@@ -666,28 +739,28 @@ public class ZIndex extends Preprocessor {
 	
 	
 	private class GNK {
-		public String code            = null;
-		public String description     = null;
-		public String casNumber       = null;
-		public String baseName        = null;
-		public String chemicalFormula = null;
+		public Integer nr              = null;
+		public String  description     = null;
+		public String  casNumber       = null;
+		public String  baseName        = null;
+		public String  chemicalFormula = null;
 		
 		public boolean ok = true;
 		
-		public GNK(String code, String description, String casNumber, String baseName, String chemicalFormula) {
-			this.code            = code;
+		public GNK(Integer nr, String description, String casNumber, String baseName, String chemicalFormula) {
+			this.nr              = nr;
 			this.description     = description == null ? null : description.trim();
 			this.casNumber       = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(casNumber.trim());
 			this.baseName        = baseName == null ? null : baseName.trim();
 			this.chemicalFormula = chemicalFormula == null ? null : chemicalFormula.trim();
 			
-			gnkMap.put(code, this);
+			gnkMap.put(nr, this);
 			if ((description != null) && (!description.equals(""))) {
 				if (gnkNameMap.get(description) == null) {
 					gnkNameMap.put(description, this);
 				}
 				else {
-					System.out.println("   ERROR: Duplicate GNK name '" + description + "' (" + gnkNameMap.get(description).code + " <-> " + code + ")");
+					System.out.println("   ERROR: Duplicate GNK name '" + description + "' (" + gnkNameMap.get(description).nr + " <-> " + nr + ")");
 					ok = false;
 				}
 			}
@@ -696,20 +769,20 @@ public class ZIndex extends Preprocessor {
 	
 	
 	private class GSK {
-		public String             code    = null;
+		public Integer            nr      = null;
 		public List<GSKComponent> gnkList = new ArrayList<GSKComponent>();
 		
-		public GSK(String code) {
-			this.code        = code == null ? null : code.trim();
+		public GSK(Integer nr) {
+			this.nr = nr;
 			
-			gskMap.put(code, this);
+			gskMap.put(nr, this);
 		}
 		
-		public void addGNK(String gnkCode, String partNumber, String type, String amount, String amountUnit, String genericName, String casNumber) {
-			if (gnkCode != null) {
-				GNK gnk = gnkMap.get(gnkCode.trim());
+		public void addGNK(Integer gnkNr, String partNumber, String type, String amount, String amountUnit, String genericName, String casNumber) {
+			if (gnkNr != null) {
+				GNK gnk = gnkMap.get(gnkNr);
 				if (gnk != null) {
-					gnkList.add(new GSKComponent(partNumber, type, amount, amountUnit, gnk, genericName, casNumber));
+					gnkList.add(new GSKComponent(nr, partNumber, type, amount, amountUnit, gnk, genericName, casNumber));
 				}
 			}
 		}
@@ -717,6 +790,7 @@ public class ZIndex extends Preprocessor {
 	
 	
 	private class GSKComponent {
+		public Integer   gskNr       = null;
 		public String    partNumber  = null;
 		public String    type        = null;
 		public String    amount      = null;
@@ -725,11 +799,13 @@ public class ZIndex extends Preprocessor {
 		public String    genericName = null;
 		public String    casNumber   = null;
 		
-		public GSKComponent(String partNumber, String type, String amount, String amountUnit, GNK gnk, String genericName, String casNumber) {
+		public GSKComponent(Integer gskNr, String partNumber, String type, String amount, String amountUnit, GNK gnk, String genericName, String casNumber) {
+			this.gskNr       = gskNr;
 			this.partNumber  = partNumber == null ? null : partNumber.trim();
 			this.type        = type == null ? "" : type.trim();
 			this.amount      = amount == null ? null : amount.trim();
 			this.amountUnit  = amountUnit == null ? null : amountUnit.trim();
+			this.gnk         = gnk;
 			this.genericName = genericName == null ? null : genericName.trim();
 			this.casNumber   = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(casNumber.trim());
 		}
@@ -737,28 +813,28 @@ public class ZIndex extends Preprocessor {
 	
 	
 	private class GPK {
-		public String code             = null;
-		public String memoCode         = null;
-		public String labelName        = null;
-		public String shortName        = null;
-		public String fullName         = null;
-		public String atcCode          = null;
-		public GSK    gsk              = null;
-		public String dddPerHPKUnit    = null;
-		public String prescriptionDays = null;
-		public String hpkmg            = null;
-		public String hpkmgUnit        = null;
-		public String pharmForm        = null;
-		public String basicUnit        = null;
+		public Integer nr               = null;
+		public String  memoCode         = null;
+		public String  labelName        = null;
+		public String  shortName        = null;
+		public String  fullName         = null;
+		public String  atcCode          = null;
+		public GSK     gsk              = null;
+		public String  dddPerHPKUnit    = null;
+		public String  prescriptionDays = null;
+		public String  hpkmg            = null;
+		public String  hpkmgUnit        = null;
+		public String  pharmForm        = null;
+		public String  basicUnit        = null;
 		
-		public GPK(String code, String memoCode, String labelName, String shortName, String fullName, String atcCode, String gskCode, String dddPerHPKUnit, String prescriptionDays, String hpkmg, String hpkmgUnit, String pharmForm, String basicUnit) {
-			this.code             = code == null ? "" : code.trim();
+		public GPK(Integer nr, String memoCode, String labelName, String shortName, String fullName, String atcCode, Integer gskNr, String dddPerHPKUnit, String prescriptionDays, String hpkmg, String hpkmgUnit, String pharmForm, String basicUnit) {
+			this.nr               = nr;
 			this.memoCode         = memoCode == null ? "" : memoCode.trim();
 			this.labelName        = labelName == null ? "" : labelName.trim();
 			this.shortName        = shortName == null ? "" : shortName.trim();
 			this.fullName         = fullName == null ? "" : fullName.trim();
 			this.atcCode          = atcCode == null ? "" : atcCode.trim();
-			this.gsk              = gskCode == null ? null : gskMap.get(gskCode);
+			this.gsk              = gskNr == null ? null : gskMap.get(gskNr);
 			this.dddPerHPKUnit    = dddPerHPKUnit == null ? "" : dddPerHPKUnit.trim();
 			this.prescriptionDays = prescriptionDays == null ? "" : prescriptionDays.trim();
 			this.hpkmg            = hpkmg == null ? "" : hpkmg.trim();
@@ -767,39 +843,39 @@ public class ZIndex extends Preprocessor {
 			this.basicUnit        = basicUnit == null ? "" : basicUnit.trim();
 
 			gpkList.add(this);
-			gpkMap.put(code, this);
+			gpkMap.put(nr, this);
 		}
 	}
 	
 	
 	private class GPKIPCI {
-		public String code            = null;
-		public String partNumber      = null;
-		public String type            = null;
-		public String amount          = null;
-		public String amountUnit      = null;
-		public GNK    gnk             = null;
-		public String gnkName         = null;
-		public String casNumber       = null;
-		public String baseName        = null;
-		public String chemicalFormula = null;
+		public Integer nr              = null;
+		public String  partNumber      = null;
+		public String  type            = null;
+		public String  amount          = null;
+		public String  amountUnit      = null;
+		public GNK     gnk             = null;
+		public String  gnkName         = null;
+		public String  casNumber       = null;
+		public String  baseName        = null;
+		public String  chemicalFormula = null;
 		
-		public GPKIPCI(String code, String partNumber, String type, String amount, String amountUnit, String gnkCode, String gnkName, String casNumber, String baseName, String chemicalFormula) {
-			this.code            = code == null ? null : code.trim();
+		public GPKIPCI(Integer nr, String partNumber, String type, String amount, String amountUnit, Integer gnkNr, String gnkName, String casNumber, String baseName, String chemicalFormula) {
+			this.nr              = nr;
 			this.partNumber      = partNumber == null ? null : partNumber.trim();
 			this.type            = type == null ? null : type.trim();
 			this.amount          = amount == null ? null : amount.trim();
 			this.amountUnit      = amountUnit == null ? null : amountUnit.trim();
-			this.gnk             = gnkCode == null ? null : gnkMap.get(gnkCode.trim());
+			this.gnk             = gnkNr == null ? null : gnkMap.get(gnkNr);
 			this.gnkName         = gnkName == null ? null : gnkName.trim();
-			this.casNumber       = casNumber == null ? null : casNumber.trim();
+			this.casNumber       = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(casNumber.trim());
 			this.baseName        = baseName == null ? null : baseName.trim();
 			this.chemicalFormula = chemicalFormula == null ? null : chemicalFormula.trim();
 			
-			List<GPKIPCI> gpkIPCI = gpkIPCIMap.get(code);
+			List<GPKIPCI> gpkIPCI = gpkIPCIMap.get(nr);
 			if (gpkIPCI == null) {
 				gpkIPCI = new ArrayList<GPKIPCI>();
-				gpkIPCIMap.put(code, gpkIPCI);
+				gpkIPCIMap.put(nr, gpkIPCI);
 			}
 			gpkIPCI.add(this);
 		}

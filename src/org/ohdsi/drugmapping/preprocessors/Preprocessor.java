@@ -365,9 +365,9 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 		
 		System.out.println(DrugMappingDateUtilities.getCurrentTime() + " Preprocessing " + getPreprocessorName() + " Drugs");
 
-		System.out.println("  Loading data");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "  Loading data");
 		boolean getDataResult = getData();
-		System.out.println("  Done");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "  Done");
 		
 		if (getDataResult) {
 			writeInputFile(outputFileName);
@@ -390,13 +390,13 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	protected boolean writeInputFile(String outputFileName) {
 		boolean result = true;
 		
-		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Writing drug mapping input file \"" + outputFileName + "\"");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "  Writing drug mapping input file \"" + outputFileName + "\"");
 		
 		if (!source.save(outputFileName, true, true)) {
 			System.out.println("ERROR: Cannot write input file \"" + outputFileName + "\"!");
 		}
 		
-		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
+		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "  Done");
 		
 		return result;
 	}

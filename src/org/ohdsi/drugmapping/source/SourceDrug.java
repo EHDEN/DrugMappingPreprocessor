@@ -38,8 +38,14 @@ public class SourceDrug {
 	}
     
     
+    public void setATC(String atcCode) {
+    	atcCodes = new ArrayList<String>();
+    	addATC(atcCode);
+    }
+    
+    
     public void addATC(String atcCode) {
-    	if ((atcCode != null) && (!atcCodes.contains(atcCode))) {
+    	if ((atcCode != null) && (!atcCode.equals("")) && (!atcCodes.contains(atcCode))) {
     		atcCodes.add(atcCode);
     	}
     }
