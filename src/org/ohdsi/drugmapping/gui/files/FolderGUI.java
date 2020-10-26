@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 
-public class Folder extends JPanel {
+public class FolderGUI extends JPanel {
 	private static final long serialVersionUID = -23890588306917810L;
 
 	private final int FOLDER_LABEL_SIZE = 260;
@@ -31,7 +31,7 @@ public class Folder extends JPanel {
 	private JButton folderSelectButton;
 	
 	
-	public Folder(String name, String labelText, String defaultFolderName) {
+	public FolderGUI(String name, String labelText, String defaultFolderName) {
 		this.name = name;
 		this.folderName = defaultFolderName;
 		

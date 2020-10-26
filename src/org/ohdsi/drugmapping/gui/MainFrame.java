@@ -21,7 +21,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
-import org.ohdsi.drugmapping.gui.files.Folder;
+import org.ohdsi.drugmapping.gui.files.FolderGUI;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.preprocessors.aemps.AEMPS;
 import org.ohdsi.drugmapping.preprocessors.laegemiddelstyrelsen.Laegemiddelstyrelsen;
@@ -300,7 +300,7 @@ public class MainFrame {
 	}
 	
 	
-	public Folder getOutputFolder() {
+	public FolderGUI getOutputFolder() {
 		return getCurrentPreprocessor().getOutputFolder();
 	}
 	

@@ -30,7 +30,7 @@ import org.ohdsi.drugmapping.gui.Console;
 import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.ObjectExchange;
 import org.ohdsi.drugmapping.gui.Setting;
-import org.ohdsi.drugmapping.gui.files.Folder;
+import org.ohdsi.drugmapping.gui.files.FolderGUI;
 import org.ohdsi.drugmapping.gui.files.InputFileGUI;
 import org.ohdsi.drugmapping.source.Source;
 import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
@@ -45,7 +45,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	protected JPanel mainPanel;
 	protected Console console = null;
 	protected String logFileName = null;
-	protected Folder outputFolder = null; 
+	protected FolderGUI outputFolder = null; 
 	protected GeneralSettings settings = null;
 	protected JButton startButton = null;
 	protected boolean isPreprocessing = false;
@@ -86,7 +86,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 		// Output Folder
 		outputPanel = new JPanel(new GridLayout(0, 1));
 		outputPanel.setBorder(BorderFactory.createTitledBorder("Output"));
-		outputFolder = new Folder("Output Folder", "Output Folder", DrugMappingPreprocessor.getBasePath());
+		outputFolder = new FolderGUI("Output Folder", "Output Folder", DrugMappingPreprocessor.getBasePath());
 		outputPanel.add(outputFolder);
 		
 		JPanel subSubPanel = new JPanel(new BorderLayout());
@@ -311,7 +311,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	}
 	
 	
-	public Folder getOutputFolder() {
+	public FolderGUI getOutputFolder() {
 		return outputFolder;
 	}
 	
@@ -334,7 +334,7 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	}
 	
 	
-	public void logFolderSettings(Folder folder) {
+	public void logFolderSettings(FolderGUI folder) {
 		if (folder.getFolderName() != null) {
 			System.out.println(folder.getName() + ": " + folder.getFolderName());
 			System.out.println();
