@@ -14,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class ChoiceValueSetting extends Setting {
@@ -25,7 +24,7 @@ public class ChoiceValueSetting extends Setting {
 	String value = null;
 	
 	
-	public ChoiceValueSetting(Preprocessor mainFrameTab, String name, String label, String[] choices, String defaultValue) {
+	public ChoiceValueSetting(Preprocessor preprocessor, String name, String label, String[] choices, String defaultValue) {
 		valueType = Setting.SETTING_TYPE_STRING;
 		this.name = name;
 		this.label = label;
@@ -53,7 +52,7 @@ public class ChoiceValueSetting extends Setting {
 			}
 		});
 		choiceValueFieldPanel.add(choiceValueField, BorderLayout.WEST);
-		DrugMappingPreprocessor.disableWhenRunning(choiceValueField);
+		disableWhenRunning(choiceValueField);
 		
 		setValue(defaultValue);
 		

@@ -11,7 +11,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class StringValueSetting extends Setting {
@@ -21,7 +20,7 @@ public class StringValueSetting extends Setting {
 	String value;
 	
 	
-	public StringValueSetting(Preprocessor mainFrameTab, String name, String label, String defaultValue) {
+	public StringValueSetting(Preprocessor preprocessor, String name, String label, String defaultValue) {
 		valueType = Setting.SETTING_TYPE_STRING;
 		this.name = name;
 		this.label = label;
@@ -57,11 +56,11 @@ public class StringValueSetting extends Setting {
 			private void check() {
 				value = stringValueField.getText();
 				correct = (!value.trim().equals(""));
-				mainFrameTab.checkReadyToStart();
+				preprocessor.checkReadyToStart();
 			}
 		});
 		stringValueFieldPanel.add(stringValueField, BorderLayout.WEST);
-		DrugMappingPreprocessor.disableWhenRunning(stringValueField);
+		disableWhenRunning(stringValueField);
 		
 		setValue(defaultValue);
 		

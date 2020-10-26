@@ -11,7 +11,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 
@@ -22,7 +21,7 @@ public class LongValueSetting extends Setting {
 	private Long value = null;
 
 	
-	public LongValueSetting(Preprocessor mainFrameTab, String name, String label, Long defaultValue) {
+	public LongValueSetting(Preprocessor preprocessor, String name, String label, Long defaultValue) {
 		valueType = Setting.SETTING_TYPE_LONG;
 		this.name = name;
 		this.label = label;
@@ -59,16 +58,16 @@ public class LongValueSetting extends Setting {
 				try {
 					value = Long.parseLong(longValueField.getText());
 					correct = true;
-					mainFrameTab.checkReadyToStart();
+					preprocessor.checkReadyToStart();
 				}
 				catch (NumberFormatException e) {
 					correct = false;
-					mainFrameTab.checkReadyToStart();
+					preprocessor.checkReadyToStart();
 				}
 			}
 		});
 		longValueFieldPanel.add(longValueField, BorderLayout.WEST);
-		DrugMappingPreprocessor.disableWhenRunning(longValueField);
+		disableWhenRunning(longValueField);
 		
 		setValue(defaultValue);
 		

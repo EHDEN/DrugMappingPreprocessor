@@ -11,7 +11,6 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 
 public class DoubleValueSetting extends Setting {
@@ -21,7 +20,7 @@ public class DoubleValueSetting extends Setting {
 	Double value;
 	
 	
-	public DoubleValueSetting(Preprocessor mainFrameTab, String name, String label, Double defaultValue) {
+	public DoubleValueSetting(Preprocessor preprocessor, String name, String label, Double defaultValue) {
 		valueType = Setting.SETTING_TYPE_DOUBLE;
 		this.name = name;
 		this.label = label;
@@ -58,16 +57,16 @@ public class DoubleValueSetting extends Setting {
 				try {
 					value = Double.parseDouble(doubleValueField.getText());
 					correct = true;
-					mainFrameTab.checkReadyToStart();
+					preprocessor.checkReadyToStart();
 				}
 				catch (NumberFormatException e) {
 					correct = false;
-					mainFrameTab.checkReadyToStart();
+					preprocessor.checkReadyToStart();
 				}
 			}
 		});
 		doubleValueFieldPanel.add(doubleValueField, BorderLayout.WEST);
-		DrugMappingPreprocessor.disableWhenRunning(doubleValueField);
+		disableWhenRunning(doubleValueField);
 		
 		setValue(defaultValue);
 		
