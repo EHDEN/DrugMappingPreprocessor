@@ -68,6 +68,7 @@ public abstract class InputFileGUI extends JPanel {
 		fileSelectCheckBox = new JCheckBox();
 		fileSelectCheckBox.setSelected(true);
 		fileSelectCheckBox.setEnabled(!fileDefinition.isRequired());
+		fileSelectCheckBox.setToolTipText("Select/Deselect file");
 		fileSelectLabelPanel.add(fileSelectCheckBox, BorderLayout.WEST);
 		if ((!fileDefinition.isRequired())) {
 			DrugMappingPreprocessor.disableWhenRunning(fileSelectCheckBox);
