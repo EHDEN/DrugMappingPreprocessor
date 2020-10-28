@@ -30,10 +30,10 @@ public abstract class InputFileGUI extends JPanel {
 	
 	
 	public static InputFileGUI getInputFile(Component parent, FileDefinition fileDefinition) {
-		if (fileDefinition.getFileType() == FileDefinition.GENERAL_FILE)   return new GeneralInputFileGUI(parent, fileDefinition);
+		//if (fileDefinition.getFileType() == FileDefinition.GENERAL_FILE)   return new GeneralInputFileGUI(parent, fileDefinition);
 		if (fileDefinition.getFileType() == FileDefinition.DELIMITED_FILE) return new DelimitedInputFileGUI(parent, fileDefinition);
-		if (fileDefinition.getFileType() == FileDefinition.EXCEL_FILE)     return new ExcelInputFileGUI(parent, fileDefinition);
-		if (fileDefinition.getFileType() == FileDefinition.XML_FILE)       return new XMLInputFileGUI(parent, fileDefinition);
+		//if (fileDefinition.getFileType() == FileDefinition.EXCEL_FILE)     return new ExcelInputFileGUI(parent, fileDefinition);
+		//if (fileDefinition.getFileType() == FileDefinition.XML_FILE)       return new XMLInputFileGUI(parent, fileDefinition);
 		return null;
 	}
 	
