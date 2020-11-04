@@ -47,7 +47,7 @@ public class LaegemiddelstyrelsenInputFiles extends InputFileDefinition {
 										new FileColumnDefinition(
 												"ATC",
 												new String[] {
-														"This is the ATC of the drug."
+														"This is the ATC code of the drug."
 												}
 										),
 										new FileColumnDefinition(

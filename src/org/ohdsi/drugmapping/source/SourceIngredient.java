@@ -1,5 +1,6 @@
 package org.ohdsi.drugmapping.source;
 
+import org.ohdsi.drugmapping.utilities.DrugMappingNumberUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class SourceIngredient {
@@ -74,12 +75,13 @@ public class SourceIngredient {
 	
 	
 	public String toString() {
-		String record = DrugMappingStringUtilities.escapeFieldValue(code);
-		record += "," + DrugMappingStringUtilities.escapeFieldValue(name);
-		record += "," + DrugMappingStringUtilities.escapeFieldValue(nameEnglish);
-		record += "," + (dosage == null ? "" : dosage);
-		record += "," + dosageUnit;
-		record += "," + (casNumber == null ? "" : casNumber);
+		String outputDosage = DrugMappingNumberUtilities.doubleWithPrecision(dosage, Source.dosagePrecision);
+		String record = DrugMappingStringUtilities.escapeFieldValue(code == null ? "" : code.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+		record += "," + DrugMappingStringUtilities.escapeFieldValue(name == null ? "" : name.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+		record += "," + DrugMappingStringUtilities.escapeFieldValue(nameEnglish == null ? "" : nameEnglish.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+		record += "," + (outputDosage == null ? "" : outputDosage);
+		record += "," + DrugMappingStringUtilities.escapeFieldValue(dosageUnit == null ? "" : dosageUnit.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+		record += "," + DrugMappingStringUtilities.escapeFieldValue(casNumber == null ? "" : casNumber).replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " ");
 		
 		return record;
 	}

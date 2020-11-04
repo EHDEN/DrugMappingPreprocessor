@@ -12,6 +12,8 @@ public class Source {
 	private List<SourceDrug> sourceDrugs = new ArrayList<SourceDrug>();
 	private Map<String, SourceDrug> sourceDrugMap = new HashMap<String, SourceDrug>();
 	
+	public static int dosagePrecision = -1; 
+	
 	
 	public SourceDrug addSourceDrug(String sourceDrugCode, String sourceDrugName, Long sourceDrugCount) {
 		SourceDrug sourceDrug = getSourceDrug(sourceDrugCode);

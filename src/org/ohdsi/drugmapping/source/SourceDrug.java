@@ -63,6 +63,26 @@ public class SourceDrug {
     }
     
     
+    public void setMaxCount(Long count) {
+    	if (this.count == null) {
+    		this.count = count;
+    	}
+    	else {
+    		this.count = Math.max(this.count, count);
+    	}
+    }
+    
+    
+    public void addCount(Long count) {
+    	if (this.count == null) {
+    		this.count = count;
+    	}
+    	else {
+    		this.count += count;
+    	}
+    }
+    
+    
     public void addIngredient(String code, String name, String nameEnglish, Double dosage, String dosageUnit, String casNumber) {
     	ingredients.add(new SourceIngredient(code, name, nameEnglish, dosage, dosageUnit, casNumber));
     }
@@ -81,16 +101,16 @@ public class SourceDrug {
     public String toString() {
     	String atc = "";
     	for (String atcCode : atcCodes) {
-    		atc += (atc.equals("") ? "" : "|") + atcCode;
+    		atc += (atc.equals("") ? "" : "|") + atcCode.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " ");
     	}
     	
     	String form = "";
     	for (String formulation : formulations) {
-    		form += (form.equals("") ? "" : "|") + formulation;
+    		form += (form.equals("") ? "" : "|") + formulation.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " ");
     	}
     	
-    	String record = DrugMappingStringUtilities.escapeFieldValue(code);
-    	record += "," + DrugMappingStringUtilities.escapeFieldValue(name);
+    	String record = DrugMappingStringUtilities.escapeFieldValue(code == null ? "" : code.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
+    	record += "," + DrugMappingStringUtilities.escapeFieldValue(name == null ? "" : name.replaceAll("\r\n", " ").replaceAll("\r", " ").replaceAll("\n", " "));
     	record += "," + DrugMappingStringUtilities.escapeFieldValue(atc);
     	record += "," + DrugMappingStringUtilities.escapeFieldValue(form);
     	record += "," + (count == null ? "" : count);
