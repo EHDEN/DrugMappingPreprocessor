@@ -16,6 +16,7 @@ import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.source.Source;
 import org.ohdsi.drugmapping.source.SourceDrug;
 import org.ohdsi.drugmapping.utilities.DrugMappingDateUtilities;
+import org.ohdsi.drugmapping.utilities.DrugMappingNumberUtilities;
 import org.ohdsi.drugmapping.utilities.DrugMappingStringUtilities;
 
 public class Article57 extends Preprocessor {
@@ -193,9 +194,9 @@ public class Article57 extends Preprocessor {
 				String atcCode = drugsFile.get(row, "ATCCode", false);
 				
 				drugCode = drugCode == null ? null : drugCode.trim();
-				//name = name == null ? null : name.trim();
+				name = name == null ? null : DrugMappingStringUtilities.convertToStandardCharacters(name.trim());
 				doseForm = doseForm == null ? null : doseForm.trim();
-				atcCode = atcCode == null ? null : atcCode.trim();
+				atcCode = atcCode == null ? null : ((atcCode.startsWith("NOT") || atcCode.equals("VARIOUS")) ? null : atcCode.trim());
 				
 				if ((drugCode != null) && (!drugCode.equals(""))) {
 					SourceDrug sourceDrug = source.addSourceDrug(drugCode, name, 0L);
@@ -242,14 +243,15 @@ public class Article57 extends Preprocessor {
 				String casNumber = compoundsFile.get(row, "CASNumber", false);
 				
 				drugCode = drugCode == null ? null : drugCode.trim();
-				//ingredientName = ingredientName == null ? null : ingredientName.trim();
+				ingredientName = ingredientName == null ? null : ingredientName.trim();
 				numeratorAmountString = numeratorAmountString == null ? null : numeratorAmountString.trim();
 				numeratorUnit = numeratorUnit == null ? null : numeratorUnit.trim();
 				denominatorAmountString = denominatorAmountString == null ? null : denominatorAmountString.trim();
 				denominatorUnit = denominatorUnit == null ? null : denominatorUnit.trim();
-				casNumber = casNumber == null ? null : casNumber.trim();
+				casNumber = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(casNumber.trim());
 				
-				String ingredientCode = ((ingredientName == null) || ingredientName.equals("")) ? "" : DrugMappingStringUtilities.safeToUpperCase(DrugMappingStringUtilities.convertToStandardCharacters(ingredientName));
+				String ingredientCode = ((ingredientName == null) || ingredientName.equals("")) ? "" : DrugMappingStringUtilities.safeToUpperCase(ingredientName);
+				ingredientName = ingredientName == null ? null : DrugMappingStringUtilities.convertToStandardCharacters(ingredientName);
 				
 				if ((drugCode != null) && (!ingredientCode.equals(""))) {
 					SourceDrug sourceDrug = source.getSourceDrug(drugCode);

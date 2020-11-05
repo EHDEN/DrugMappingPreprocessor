@@ -46,7 +46,20 @@ public class SourceDrug {
     
     public void addATC(String atcCode) {
     	if ((atcCode != null) && (!atcCode.equals("")) && (!atcCodes.contains(atcCode))) {
-    		atcCodes.add(atcCode);
+			boolean found = false;
+    		if (atcCodes.size() > 0) {
+    			for (int atcNr = atcCodes.size() - 1; atcNr >= 0; atcNr--) {
+    				String existingATCCode = atcCodes.get(atcNr);
+    				if ((!existingATCCode.startsWith(atcCode)) && (atcCode.startsWith(existingATCCode))) {
+    					atcCodes.set(atcNr, atcCode);
+    					found = true;
+    					break;
+    				}
+    			}
+    		}
+			if (!found) {
+        		atcCodes.add(atcCode);
+			}
     	}
     }
     
