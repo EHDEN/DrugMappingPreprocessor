@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.poi.ss.usermodel.Row;
 import org.ohdsi.drugmapping.DrugMappingPreprocessor;
 import org.ohdsi.drugmapping.files.DelimitedFileRow;
 import org.ohdsi.drugmapping.gui.MainFrame;
 import org.ohdsi.drugmapping.gui.files.DelimitedInputFileGUI;
-import org.ohdsi.drugmapping.gui.files.ExcelInputFileGUI;
 import org.ohdsi.drugmapping.preprocessors.Preprocessor;
 import org.ohdsi.drugmapping.source.Source;
 import org.ohdsi.drugmapping.source.SourceDrug;
@@ -194,8 +192,8 @@ public class Article57 extends Preprocessor {
 				String atcCode = drugsFile.get(row, "ATCCode", false);
 				
 				drugCode = drugCode == null ? null : drugCode.trim();
-				name = name == null ? null : DrugMappingStringUtilities.convertToStandardCharacters(name.trim());
-				doseForm = doseForm == null ? null : doseForm.trim();
+				name = name == null ? null : fixSpecificTexts(name.trim());
+				doseForm = doseForm == null ? null : fixSpecificTexts(doseForm.trim());
 				atcCode = atcCode == null ? null : ((atcCode.startsWith("NOT") || atcCode.equals("VARIOUS")) ? null : atcCode.trim());
 				
 				if ((drugCode != null) && (!drugCode.equals(""))) {
@@ -243,15 +241,15 @@ public class Article57 extends Preprocessor {
 				String casNumber = compoundsFile.get(row, "CASNumber", false);
 				
 				drugCode = drugCode == null ? null : drugCode.trim();
-				ingredientName = ingredientName == null ? null : ingredientName.trim();
+				ingredientName = ingredientName == null ? null : fixSpecificTexts(ingredientName.trim());
 				numeratorAmountString = numeratorAmountString == null ? null : numeratorAmountString.trim();
-				numeratorUnit = numeratorUnit == null ? null : numeratorUnit.trim();
+				numeratorUnit = numeratorUnit == null ? null : fixSpecificTexts(numeratorUnit.trim());
 				denominatorAmountString = denominatorAmountString == null ? null : denominatorAmountString.trim();
-				denominatorUnit = denominatorUnit == null ? null : denominatorUnit.trim();
-				casNumber = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(casNumber.trim());
+				denominatorUnit = denominatorUnit == null ? null : fixSpecificTexts(denominatorUnit.trim());
+				casNumber = casNumber == null ? null : DrugMappingNumberUtilities.uniformCASNumber(fixSpecificTexts(casNumber.trim()));
 				
-				String ingredientCode = ((ingredientName == null) || ingredientName.equals("")) ? "" : DrugMappingStringUtilities.safeToUpperCase(ingredientName);
-				ingredientName = ingredientName == null ? null : DrugMappingStringUtilities.convertToStandardCharacters(ingredientName);
+				String ingredientCode = ((ingredientName == null) || ingredientName.equals("")) ? "" : ingredientName;
+				ingredientName = ingredientName == null ? null : ingredientName;
 				
 				if ((drugCode != null) && (!ingredientCode.equals(""))) {
 					SourceDrug sourceDrug = source.getSourceDrug(drugCode);
@@ -332,6 +330,27 @@ public class Article57 extends Preprocessor {
 			result = false;
 		}
 		System.out.println(DrugMappingDateUtilities.getCurrentTime() + "   Done");
+		
+		return result;
+	}
+	
+	
+	private String fixSpecificTexts(String text) {
+		String result = DrugMappingStringUtilities.convertToANSI(text);
+
+		if (result.contains("DL-?-TOCOPHEROL")) {
+			result.replaceAll("DL-?-TOCOPHEROL", "DL-ALPHA-TOCOPHEROL");
+		}
+
+		result = result.replaceAll("–", "-");
+		result = result.replaceAll("’", "'");
+		result = result.replaceAll("”", "\"");
+		result = result.replaceAll("ß", "SS");
+		result = result.replaceAll("•", "*");
+		result = result.replaceAll("\r\n", " ");
+		result = result.replaceAll("\r", " ");
+		result = result.replaceAll("\n", " ");
+		result = result.replaceAll("\t", " ");
 		
 		return result;
 	}
