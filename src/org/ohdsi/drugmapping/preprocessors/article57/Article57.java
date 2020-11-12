@@ -338,13 +338,10 @@ public class Article57 extends Preprocessor {
 	private String fixSpecificTexts(String text) {
 		String result = DrugMappingStringUtilities.convertToANSI(text);
 
-		if (result.contains("DL-?-TOCOPHEROL")) {
-			result.replaceAll("DL-?-TOCOPHEROL", "DL-ALPHA-TOCOPHEROL");
-		}
-
 		result = result.replaceAll("–", "-");
 		result = result.replaceAll("’", "'");
 		result = result.replaceAll("”", "\"");
+		result = result.replaceAll("ß-", "BETA-");
 		result = result.replaceAll("ß", "SS");
 		result = result.replaceAll("•", "*");
 		result = result.replaceAll("\r\n", " ");
