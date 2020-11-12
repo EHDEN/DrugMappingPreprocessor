@@ -445,14 +445,17 @@ public class DrugMappingStringUtilities {
 	
 	
 	public static String convertToANSI(String string) {
-		String ansiString = "";
+		String ansiString = null;
 		
-		for (int charNr = 0; charNr < string.length(); charNr++) {
-			Character character = string.charAt(charNr);
-			if (character == 'α') {
-				character = 'a';
+		if (string != null) {
+			ansiString = "";
+			for (int charNr = 0; charNr < string.length(); charNr++) {
+				Character character = string.charAt(charNr);
+				if (character == 'α') {
+					character = 'a';
+				}
+				ansiString += character;
 			}
-			ansiString += character;
 		}
 		
 		return ansiString;
@@ -480,6 +483,30 @@ public class DrugMappingStringUtilities {
 		}
 		
 		return safeUpperCaseString;
+	}
+	
+	
+	public static String uniformATCCode(String atcCode) {
+		String alfa = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		String numeric = "1234567890";
+		String[] atcFormat = new String[] { alfa, numeric, numeric, alfa, alfa, numeric, numeric };
+		
+		if (atcCode != null) {
+			atcCode = safeToUpperCase(atcCode.trim().replaceAll(" ", "").replaceAll("-", "").replaceAll("\t", ""));
+			if ((atcCode.length() > 0) && (atcCode.length() < 8)) {
+				for (int charNr = 0; charNr < atcCode.length(); charNr++) {
+					if (!atcFormat[charNr].contains(atcCode.substring(charNr, charNr + 1))) {
+						atcCode = null;
+						break;
+					}
+				}
+			}
+			else {
+				atcCode = null;
+			}
+		}
+		
+		return atcCode;
 	}
 	
 	

@@ -1,5 +1,6 @@
 package org.ohdsi.drugmapping.preprocessors.article57;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -194,21 +195,35 @@ public class Article57 extends Preprocessor {
 				drugCode = drugCode == null ? null : drugCode.trim();
 				name = name == null ? null : fixSpecificTexts(name.trim());
 				doseForm = doseForm == null ? null : fixSpecificTexts(doseForm.trim());
-				atcCode = atcCode == null ? null : ((atcCode.startsWith("NOT") || atcCode.equals("VARIOUS")) ? null : atcCode.trim());
-				
+				atcCode = atcCode == null ? null : DrugMappingStringUtilities.uniformATCCode(atcCode);
+								
 				if ((drugCode != null) && (!drugCode.equals(""))) {
 					SourceDrug sourceDrug = source.addSourceDrug(drugCode, name, 0L);
 					if ((doseForm != null) && (!doseForm.equals(""))) {
 						sourceDrug.addFormulation(doseForm);
 					}
 					if ((atcCode != null) && (!atcCode.equals(""))) {
+						List<String> oldATCCodes = new ArrayList<String>(); 
+						oldATCCodes.addAll(sourceDrug.getATCCodes());
 						sourceDrug.addATC(atcCode);
-						Set<SourceDrug> atcSet = atcMap.get(atcCode);
-						if (atcSet == null) {
-							atcSet = new HashSet<SourceDrug>();
-							atcMap.put(atcCode, atcSet);
+						List<String> newATCCodes = sourceDrug.getATCCodes();
+						for (String atc : oldATCCodes) {
+							if (!newATCCodes.contains(atc)) {
+								Set<SourceDrug> oldATCSet = atcMap.get(atc);
+								oldATCSet.remove(sourceDrug);
+								if (oldATCSet.size() == 0) {
+									atcMap.remove(atc);
+								}
+							}
 						}
-						atcSet.add(sourceDrug);
+						for (String atc : newATCCodes) {
+							Set<SourceDrug> newATCSet = atcMap.get(atc);
+							if (newATCSet == null) {
+								newATCSet = new HashSet<SourceDrug>();
+								atcMap.put(atc, newATCSet);
+							}
+							newATCSet.add(sourceDrug);
+						}
 					}
 				}
 			}
@@ -293,10 +308,9 @@ public class Article57 extends Preprocessor {
 		if (countsFile.openFileForReading(true)) {
 			while (countsFile.hasNext()) {
 				DelimitedFileRow row = countsFile.next();
-				String atcCode = countsFile.get(row, "ATCCode", false);
+				String atcCode = DrugMappingStringUtilities.uniformATCCode(countsFile.get(row, "ATCCode", false));
 				String countString = countsFile.get(row, "Count", false);
 
-				atcCode = atcCode == null ? null : atcCode.trim();
 				countString = countString == null ? null : countString.trim();
 				
 				Long count = 0L;
@@ -337,6 +351,10 @@ public class Article57 extends Preprocessor {
 	
 	private String fixSpecificTexts(String text) {
 		String result = DrugMappingStringUtilities.convertToANSI(text);
+		
+		if (text.equals("AETHYLII ?-BROMISOVALERAS STABILISATUS")) {
+			result = "AETHYLII ALPHA-BROMISOVALERAS STABILISATUS";
+		}
 
 		result = result.replaceAll("–", "-");
 		result = result.replaceAll("’", "'");

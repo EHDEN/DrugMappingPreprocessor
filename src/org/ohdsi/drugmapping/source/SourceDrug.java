@@ -50,9 +50,11 @@ public class SourceDrug {
     		if (atcCodes.size() > 0) {
     			for (int atcNr = atcCodes.size() - 1; atcNr >= 0; atcNr--) {
     				String existingATCCode = atcCodes.get(atcNr);
-    				if ((!existingATCCode.startsWith(atcCode)) && (atcCode.startsWith(existingATCCode))) {
-    					atcCodes.set(atcNr, atcCode);
+    				if ((existingATCCode.startsWith(atcCode)) || (atcCode.startsWith(existingATCCode))) {
     					found = true;
+    					if (atcCode.length() > existingATCCode.length()) {
+        					atcCodes.set(atcNr, atcCode);
+    					}
     					break;
     				}
     			}
@@ -61,6 +63,11 @@ public class SourceDrug {
         		atcCodes.add(atcCode);
 			}
     	}
+    }
+    
+    
+    public List<String> getATCCodes() {
+    	return atcCodes;
     }
     
     
