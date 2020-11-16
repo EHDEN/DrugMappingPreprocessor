@@ -278,7 +278,7 @@ public class Article57 extends Preprocessor {
 
 						Double denominatorAmount = null;
 						try {
-							denominatorAmount = Double.parseDouble(denominatorAmountString);
+							denominatorAmount = Double.parseDouble(denominatorAmountString.equals("0") ? "1" : denominatorAmountString);
 						} catch (NumberFormatException e) {
 							denominatorAmount = null;
 						}
