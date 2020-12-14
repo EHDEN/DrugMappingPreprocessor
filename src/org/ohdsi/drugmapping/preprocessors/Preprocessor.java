@@ -359,9 +359,9 @@ abstract public class Preprocessor extends JPanel implements Comparable<Preproce
 	public void run(String outputFileName) {
 		for (InputFileGUI inputFile : inputFiles) {
 			inputFile.logFileSettings();
-			System.out.println("Output file: " + outputFileName);
-			System.out.println();
 		}
+		System.out.println("Output file: " + outputFileName);
+		System.out.println();
 		
 		System.out.println(DrugMappingDateUtilities.getCurrentTime() + " Preprocessing " + getPreprocessorName() + " Drugs");
 
