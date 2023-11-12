@@ -12,6 +12,7 @@ import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
 public class Wrapper {
+	// Wrapper for allocating enough memory
 
 	public static void main(String[] args) throws IOException, InterruptedException {
 		
